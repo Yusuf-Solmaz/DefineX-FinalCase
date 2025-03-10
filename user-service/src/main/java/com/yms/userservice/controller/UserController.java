@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
-@RestController("api/v1/users")
+@RestController
+@RequestMapping("api/v1/users")
 @AllArgsConstructor
 public class UserController {
 
