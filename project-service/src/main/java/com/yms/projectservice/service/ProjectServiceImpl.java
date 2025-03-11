@@ -63,16 +63,6 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public List<ProjectDto> findByMemberId(Long memberId) {
-        return projectRepository.findByTeamMemberId(memberId)
-                .stream()
-                .map(projectMapper::toProjectDto)
-                .collect(Collectors.toList());
-    }
-
-
-
-    @Override
     public List<MemberResponse> getAllMembers(Long projectId) {
         List<Long> memberIds = projectRepository.findById(projectId)
                 .stream()
