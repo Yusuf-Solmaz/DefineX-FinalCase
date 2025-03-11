@@ -24,3 +24,7 @@ eureka:
 
 server:
   port: 8070
+
+application:
+  config:
+    members-url: http://localhost:8090/api/v1/users
