@@ -28,4 +28,14 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(NoMembersFoundException.class)
+    public ResponseEntity<RootException> handleException(NoMembersFoundException e) {
+        RootException exception = new RootException(
+                HttpStatus.NOT_FOUND.value(),
+                e.getLocalizedMessage(),
+                System.currentTimeMillis()
+        );
+        return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
+    }
 }
