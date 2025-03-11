@@ -31,7 +31,10 @@ public class Project {
     private String description;
 
     @ElementCollection
+    @CollectionTable(name = "project_members", joinColumns = @JoinColumn(name = "project_id"))
+    @Column(name = "member_id")
     private List<Long> teamMemberIds;
+
 
     private String departmentName;
 
