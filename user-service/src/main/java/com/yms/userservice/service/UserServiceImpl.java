@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -49,6 +50,19 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException("User with ID " + id + " not found!");
         }
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public List<UserDto> findByIds(List<Long> ids) {
+        List<User> users = userRepository.findAllById(ids);
+
+        if (users.isEmpty()) {
+            throw new UserNotFoundException("User with ID " + ids + " not found!");
+        }
+
+        return users.stream()
+                .map(userMapper::toUserDto)
+                .collect(Collectors.toList());
     }
 
 
