@@ -1,34 +1,5 @@
-eureka:
-  instance:
-    hostname: localhost
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-
-server:
-  port: 8222
-
 spring:
   application:
     name: api-gateway
   config:
     import: optional:configserver:http://localhost:8888
-  cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: true
-      routes:
-        - id: projects
-          uri: lb://project-service
-          predicates:
-            - Path=/api/v1/projects/**
-        - id: users
-          uri: lb://user-service
-          predicates:
-            - Path=/api/v1/users/**
-
-management:
-  tracing:
-    sampling:
-      probability: 1.0
