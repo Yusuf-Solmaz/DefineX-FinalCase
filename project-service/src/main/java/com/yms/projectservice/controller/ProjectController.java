@@ -1,9 +1,9 @@
 package com.yms.projectservice.controller;
 
+import com.yms.projectservice.dto.MemberResponse;
 import com.yms.projectservice.dto.ProjectDto;
 import com.yms.projectservice.entity.Project;
 import com.yms.projectservice.service.abstracts.ProjectService;
-import jakarta.servlet.ServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,9 +43,14 @@ public class ProjectController {
         projectService.deleteById(id);
     }
 
-    @GetMapping("/member")
-    public List<ProjectDto> getProjectMember(@RequestParam Long id) {
-        return projectService.findByMemberId(id);
+    @GetMapping("/members/{id}")
+    public ResponseEntity<List<MemberResponse>> getProjectMember(@PathVariable Long id) {
+        return ResponseEntity.ok(projectService.getAllMembers(id));
+    }
+
+    @GetMapping("/member-ids/{id}")
+    public List<Long> getProjectMemberIds(@PathVariable Long id) {
+        return projectService.getAllMembersId(id);
     }
 
 }
