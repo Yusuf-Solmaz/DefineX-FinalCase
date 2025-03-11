@@ -41,4 +41,9 @@ public class UserController {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/batch")
+    public List<UserDto> findUsersByIds(@RequestParam List<Long> ids) {
+        return userService.findByIds(ids);
+    }
 }
