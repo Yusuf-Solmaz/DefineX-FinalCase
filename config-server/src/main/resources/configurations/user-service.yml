@@ -9,7 +9,7 @@ spring:
       password: 1234
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
@@ -22,3 +22,8 @@ eureka:
 
 server:
   port: 8090
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
