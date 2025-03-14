@@ -3,13 +3,20 @@ package com.yms.userservice.controller;
 import com.yms.userservice.dto.UserDto;
 import com.yms.userservice.entities.User;
 import com.yms.userservice.service.abstracts.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/v1/users")
@@ -18,9 +25,26 @@ public class UserController {
 
     private final UserService userService;
 
+
+    @PreAuthorize("hasAuthority('ROLE_TEAM_MEMBER')")
     @GetMapping
-    public List<UserDto> findAll() {
+    public List<UserDto> findAll(HttpServletRequest request) {
         return userService.findAll();
+
+        /*
+        * // HTTP başlıklarından kullanıcının rollerini alıyoruz
+        String rolesHeader = request.getHeader("X-User-Roles");
+        System.out.println("rolesHeader: " + rolesHeader);
+
+        if (rolesHeader != null) {
+            List<String> roles = Arrays.asList(rolesHeader.split(","));
+            if (roles.contains("ROLE_TEAM_MEMBER")) {
+                return userService.findAll();
+            }
+        }
+
+        throw new RuntimeException("Unauthorized access");
+        * */
     }
 
     @GetMapping("/{id}")

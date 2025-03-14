@@ -7,6 +7,7 @@ import com.yms.projectservice.service.abstracts.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -44,8 +45,8 @@ public class ProjectController {
     }
 
     @GetMapping("/members/{id}")
-    public ResponseEntity<List<MemberResponse>> getProjectMember(@PathVariable Long id) {
-        return ResponseEntity.ok(projectService.getAllMembers(id));
+    public ResponseEntity<List<MemberResponse>> getProjectMember(Authentication connectedUser, @RequestParam String token, @PathVariable Long id) {
+        return ResponseEntity.ok(projectService.getAllMembers(connectedUser,id));
     }
 
     @GetMapping("/member-ids/{id}")

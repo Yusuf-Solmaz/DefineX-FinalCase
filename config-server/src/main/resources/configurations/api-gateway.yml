@@ -17,14 +17,25 @@ spring:
         locator:
           enabled: true
       routes:
+        - id: auth
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/auth/**
+
         - id: projects
           uri: lb://project-service
           predicates:
             - Path=/api/v1/projects/**
+          filters:
+            - AuthenticationFilter
+
         - id: users
           uri: lb://user-service
           predicates:
             - Path=/api/v1/users/**
+          filters:
+            - AuthenticationFilter
+
 
 management:
   tracing:

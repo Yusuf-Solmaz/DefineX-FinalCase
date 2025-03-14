@@ -10,6 +10,7 @@ import com.yms.projectservice.exception.ProjectNotFound;
 import com.yms.projectservice.mapper.ProjectMapper;
 import com.yms.projectservice.repository.ProjectRepository;
 import com.yms.projectservice.service.abstracts.ProjectService;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -63,7 +64,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public List<MemberResponse> getAllMembers(Long projectId) {
+    public List<MemberResponse> getAllMembers(Authentication connectedUser,Long projectId) {
         List<Long> memberIds = projectRepository.findById(projectId)
                 .stream()
                 .flatMap(project -> project.getTeamMemberIds().stream())
@@ -76,7 +77,13 @@ public class ProjectServiceImpl implements ProjectService {
         if (memberIds.isEmpty()) {
             throw new NoMembersFoundException("No members found in the project.");
         }
+        var user = connectedUser.getAuthorities();
+        var user1 = connectedUser.getPrincipal();
+        var user2 = connectedUser.getCredentials();
 
+        System.out.println("user = " + user);
+        System.out.println("user1 = " + user1);
+        System.out.println("user2 = " + user2);
         return memberClient.findUsersByIds(memberIds);
     }
 

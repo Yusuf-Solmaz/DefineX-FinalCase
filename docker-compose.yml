@@ -8,11 +8,19 @@ services:
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
+      - ./init-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
     ports:
       - "5432:5432"
     networks:
       - postgres
     restart: unless-stopped
+  mail-dev:
+    container_name: mail-dev-bsn
+    image: maildev/maildev
+    ports:
+      - "1080:1080"
+      - "1025:1025"
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
