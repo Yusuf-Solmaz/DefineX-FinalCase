@@ -33,7 +33,8 @@ public class RouteValidator {
     // Authorization gerektiren API endpoint'leri (bu endpoint'ler sadece geçerli bir token ile erişilebilir)
     public static final List<String> authorizationRequiredEndpoints = List.of(
             "/api/v1/projects",
-            "/api/v1/user"
+            "/api/v1/user",
+            "/api/v1/tasks"
     );
 
     // isSecured predikatı, eğer istenen endpoint authorization gerektiriyorsa true döner
