@@ -1,6 +1,9 @@
 package com.yms.auth_service.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,11 +41,19 @@ public class User implements UserDetails, Principal {
     private Integer id;
     private String firstname;
     private String lastname;
-    private LocalDate dateOfBirth;
-    @Column(unique = true)
+
+    @Email(message = "Invalid Email Address")
+    @NotBlank(message = "Email Can Not Be Empty")
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @NotBlank(message = "Password Can Not Be Empty")
+    @Size(min = 6, message = "Password Must Be At Least 6 Character")
+    @Column(nullable = false)
     private String password;
+
     private boolean accountLocked;
+
     private boolean enabled;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -92,10 +103,6 @@ public class User implements UserDetails, Principal {
     @Override
     public boolean isEnabled() {
         return enabled;
-    }
-
-    public String fullName() {
-        return getFirstname() + " " + getLastname();
     }
 
     @Override

@@ -18,7 +18,7 @@ public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @NotBlank(message = "Project title cannot be empty.")
     @Size(min = 3, max = 100, message = "Project title must be between 3 and 100 characters.")
@@ -33,7 +33,7 @@ public class Project {
     @ElementCollection
     @CollectionTable(name = "project_members", joinColumns = @JoinColumn(name = "project_id"))
     @Column(name = "member_id")
-    private List<Long> teamMemberIds;
+    private List<Integer> teamMemberIds;
 
 
     private String departmentName;

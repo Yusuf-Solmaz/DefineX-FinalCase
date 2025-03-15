@@ -1,5 +1,6 @@
 package com.yms.auth_service.controller;
 
+import com.yms.auth_service.dto.request.RegistrationRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
@@ -27,7 +28,7 @@ public class AuthenticationController {
     public ResponseEntity<?> register(
             @RequestBody @Valid RegistrationRequest request
     ) throws MessagingException {
-        service.register(request);
+        service.register(request,"ROLE_TEAM_MEMBER");
         return ResponseEntity.accepted().build();
     }
 

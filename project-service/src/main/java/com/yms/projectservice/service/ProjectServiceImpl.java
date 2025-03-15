@@ -2,7 +2,7 @@ package com.yms.projectservice.service;
 
 import com.yms.projectservice.client.MemberClient;
 import com.yms.projectservice.dto.ProjectDto;
-import com.yms.projectservice.dto.MemberResponse;
+import com.yms.projectservice.dto.UserResponse;
 import com.yms.projectservice.entity.Project;
 import com.yms.projectservice.entity.ProjectStatus;
 import com.yms.projectservice.exception.NoMembersFoundException;
@@ -11,6 +11,7 @@ import com.yms.projectservice.mapper.ProjectMapper;
 import com.yms.projectservice.repository.ProjectRepository;
 import com.yms.projectservice.service.abstracts.ProjectService;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectDto findById(Long id) {
+    public ProjectDto findById(Integer id) {
         return projectRepository.findById(id)
                 .map(projectMapper::toProjectDto)
                 .orElseThrow(() -> new ProjectNotFound("Project with ID " + id + " not found!"));
@@ -47,7 +48,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(Integer id) {
         try{
             projectRepository.deleteById(id);
         } catch (ProjectNotFound e) {
@@ -64,31 +65,27 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public List<MemberResponse> getAllMembers(Authentication connectedUser,Long projectId) {
-        List<Long> memberIds = projectRepository.findById(projectId)
+    public List<UserResponse> getAllMembers(Integer projectId, String token) {
+        List<Integer> memberIds = projectRepository.findById(projectId)
                 .stream()
                 .flatMap(project -> project.getTeamMemberIds().stream())
                 .distinct()
                 .toList();
 
-        System.out.println(projectRepository.findById(projectId));
-        System.out.println("memberIds = " + memberIds);
+        System.out.println("Project ID: " + projectId);
+        System.out.println("Member IDs: " + memberIds);
 
         if (memberIds.isEmpty()) {
             throw new NoMembersFoundException("No members found in the project.");
         }
-        var user = connectedUser.getAuthorities();
-        var user1 = connectedUser.getPrincipal();
-        var user2 = connectedUser.getCredentials();
 
-        System.out.println("user = " + user);
-        System.out.println("user1 = " + user1);
-        System.out.println("user2 = " + user2);
-        return memberClient.findUsersByIds(memberIds);
+        System.out.println("Token: " + token);
+
+        return memberClient.findUsersByIds(memberIds, token); // ✅ Token header'dan geçiyor
     }
 
     @Override
-    public List<Long> getAllMembersId(Long id) {
+    public List<Integer> getAllMembersId(Integer id) {
         return projectRepository.findMemberIdsByProjectId(id);
     }
 

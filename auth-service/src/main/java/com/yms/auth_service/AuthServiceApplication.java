@@ -27,6 +27,12 @@ public class AuthServiceApplication {
 			if (roleRepository.findByName("ROLE_TEAM_MEMBER").isEmpty()) {
 				roleRepository.save(Role.builder().name("ROLE_TEAM_MEMBER").build());
 			}
+			if (roleRepository.findByName("ROLE_TEAM_LEADER").isEmpty()) {
+				roleRepository.save(Role.builder().name("ROLE_TEAM_LEADER").build());
+			}
+			if (roleRepository.findByName("ROLE_PROJECT_MANAGER").isEmpty()) {
+				roleRepository.save(Role.builder().name("ROLE_PROJECT_MANAGER").build());
+			}
 		};
 	}
 }

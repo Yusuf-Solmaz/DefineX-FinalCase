@@ -19,14 +19,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("api/v1/users")
+@RequestMapping("/users")
 @AllArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
 
-    @PreAuthorize("hasAuthority('ROLE_TEAM_MEMBER')")
+    @PreAuthorize("hasAuthority('ROLE_TEAM_MEMBERRRR')")
     @GetMapping
     public List<UserDto> findAll(HttpServletRequest request) {
         return userService.findAll();

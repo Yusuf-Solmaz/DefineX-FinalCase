@@ -1,10 +1,10 @@
 package com.yms.auth_service.controller;
 
+import com.yms.auth_service.dto.request.RegistrationRequest;
 import com.yms.auth_service.email.EmailService;
 import com.yms.auth_service.email.EmailTemplateName;
 import com.yms.auth_service.entity.Token;
 import com.yms.auth_service.entity.User;
-import com.yms.auth_service.entity.UserRole;
 //import com.yms.auth_service.repository.RoleRepository;
 import com.yms.auth_service.repository.RoleRepository;
 import com.yms.auth_service.repository.TokenRepository;
@@ -24,7 +24,6 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,15 +40,15 @@ public class AuthenticationService {
     @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
 
-    public void register(RegistrationRequest request) throws MessagingException {
-        var userRole = roleRepository.findByName("ROLE_TEAM_MEMBER")
+    public void register(RegistrationRequest request,String role) throws MessagingException {
+        var userRole = roleRepository.findByName(role)
                 // todo - better exception handling
-                .orElseThrow(() -> new IllegalStateException("ROLE TEAM_MEMBER was not initiated"));
+                .orElseThrow(() -> new IllegalStateException("role"+" was not initiated"));
         var user = User.builder()
-                .firstname(request.getFirstname())
-                .lastname(request.getLastname())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .firstname(request.firstname())
+                .lastname(request.lastname())
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
                 .accountLocked(false)
                 .enabled(false)
                 .roles(List.of(userRole))
