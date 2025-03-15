@@ -1,6 +1,7 @@
 package com.yms.auth_service.exception;
 import com.yms.auth_service.exception.exception_response.ExceptionResponse;
 import jakarta.mail.MessagingException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -13,12 +14,33 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static com.yms.auth_service.exception.exception_response.BusinessErrorCodes.*;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static com.yms.auth_service.exception.exception_response.BusinessErrorCodes.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleException(UserNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ExceptionResponse.builder()
+                        .businessErrorCode(NOT_FOUND.getCode())
+                        .businessErrorDescription("User Not Found")
+                        .error(e.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleException(RoleNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ExceptionResponse.builder()
+                        .businessErrorCode(NOT_FOUND.getCode())
+                        .businessErrorDescription("Role Not Found")
+                        .error(e.getMessage())
+                        .build());
+    }
 
     @ExceptionHandler(LockedException.class)
     public ResponseEntity<ExceptionResponse> handleException(LockedException exp) {
