@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: task-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/tasks
+    hikari:
+      username: postgres
+      password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+server:
+  port: 8050
+
+application:
+  config:
+    members-url: TODO
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0

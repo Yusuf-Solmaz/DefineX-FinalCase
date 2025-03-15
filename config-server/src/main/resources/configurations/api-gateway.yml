@@ -36,6 +36,13 @@ spring:
           filters:
             - AuthenticationFilter
 
+        - id: tasks
+          uri: lb://task-service
+          predicates:
+            - Path=/api/v1/tasks/**
+          filters:
+            - AuthenticationFilter
+
 
 management:
   tracing:
