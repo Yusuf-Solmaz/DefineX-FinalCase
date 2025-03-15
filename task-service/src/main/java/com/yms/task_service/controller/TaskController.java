@@ -53,7 +53,7 @@ public class TaskController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelTask(@PathVariable Integer id) {
-        taskService.cancelTaskTask(id);
+        taskService.cancelTask(id);
         return ResponseEntity.noContent().build();
     }
 }
