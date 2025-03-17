@@ -21,10 +21,10 @@ public class TaskController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<TaskDto> createTask(@RequestBody Task task) {
+    public ResponseEntity<TaskDto> createTask(@RequestBody Task task,@RequestHeader("Authorization") String token) {
         return ResponseEntity.created(
                 URI.create("/api/v1/tasks"+"/"+task.getId())
-        ).body(taskService.save(task));
+        ).body(taskService.save(task,token));
     }
 
 
