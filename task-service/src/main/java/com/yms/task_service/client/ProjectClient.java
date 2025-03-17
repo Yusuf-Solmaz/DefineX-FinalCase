@@ -1,6 +1,20 @@
 package com.yms.task_service.client;
 
-public interface ProjectClient {
-}
+import com.yms.task_service.dto.ProjectResponse;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 
-// TODO: project id'sini al, task save ederken project idsi bulunmazsa hata döndür
+import java.util.List;
+
+@FeignClient(name= "project-service",url = "${application.config.projects-url}")
+public interface ProjectClient {
+
+    @GetMapping("/{id}")
+    ProjectResponse findProjectById(@PathVariable Integer id, @RequestHeader("Authorization") String token);
+
+    @GetMapping("/member-ids/{id}")
+    List<Integer> getProjectMemberIds(@PathVariable Integer id, @RequestHeader("Authorization") String token);
+}
