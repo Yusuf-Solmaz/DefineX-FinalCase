@@ -9,24 +9,21 @@ import com.yms.projectservice.exception.NoMembersFoundException;
 import com.yms.projectservice.exception.ProjectNotFound;
 import com.yms.projectservice.mapper.ProjectMapper;
 import com.yms.projectservice.repository.ProjectRepository;
+import com.yms.projectservice.service.abstracts.MemberClientService;
 import com.yms.projectservice.service.abstracts.ProjectService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final ProjectMapper projectMapper;
-    private final MemberClient memberClient;
-
-    public ProjectServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper, MemberClient memberClient) {
-        this.projectRepository = projectRepository;
-        this.projectMapper = projectMapper;
-        this.memberClient = memberClient;
-    }
+    private final MemberClientService memberClient;
 
     @Override
     public ProjectDto findById(Integer id) {
@@ -70,8 +67,6 @@ public class ProjectServiceImpl implements ProjectService {
                 .distinct()
                 .toList();
 
-        System.out.println("Project ID: " + projectId);
-        System.out.println("Member IDs: " + memberIds);
 
         if (memberIds.isEmpty()) {
             throw new NoMembersFoundException("No members found in the project.");
