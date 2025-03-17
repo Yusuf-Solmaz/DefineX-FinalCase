@@ -15,26 +15,15 @@ services:
     networks:
       - postgres
     restart: unless-stopped
+
   mail-dev:
     container_name: mail-dev-bsn
     image: maildev/maildev
     ports:
       - "1080:1080"
       - "1025:1025"
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-    ports:
-      - "5050:80"
-    networks:
-      - postgres
-    restart: unless-stopped
+
+
   zipkin:
     container_name: zipkin
     image: openzipkin/zipkin
@@ -42,6 +31,20 @@ services:
       - "9411:9411"
     networks:
       - zipkin
+
+  mongodb:
+    container_name: mongodb
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongodb
+      MONGO_INITDB_ROOT_PASSWORD: mongodb
+    volumes:
+      - mongodb:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - postgres
+    restart: unless-stopped
 
 networks:
   postgres:
@@ -52,3 +55,4 @@ networks:
 volumes:
   postgres:
   pgadmin:
+  mongodb:
