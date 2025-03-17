@@ -43,6 +43,13 @@ spring:
           filters:
             - AuthenticationFilter
 
+        - id: attachments
+          uri: lb://attachment-service
+          predicates:
+            - Path=/api/v1/attachments/**
+          filters:
+            - AuthenticationFilter
+
 
 management:
   tracing:
