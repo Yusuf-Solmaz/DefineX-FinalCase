@@ -25,7 +25,7 @@ server:
 
 application:
   config:
-    members-url: TODO
+    projects-url: http://localhost:8222/api/v1/projects
 
 management:
   tracing:
