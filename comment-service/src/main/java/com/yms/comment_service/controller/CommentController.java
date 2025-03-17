@@ -2,9 +2,13 @@ package com.yms.comment_service.controller;
 
 import com.yms.comment_service.dto.CommentDto;
 import com.yms.comment_service.dto.CommentResponse;
+import com.yms.comment_service.dto.PagedResponse;
 import com.yms.comment_service.service.abstracts.CommentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +25,15 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("{taskId}")
-    public ResponseEntity<List<CommentDto>> getAllComments(@PathVariable Integer taskId) {
-        return ResponseEntity.ok(commentService.getCommentsByTaskId(taskId));
+    public ResponseEntity<PagedResponse<CommentDto>> getAllComments(
+            @PathVariable Integer taskId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(commentService.getCommentsByTaskId(taskId, pageable));
     }
+
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
