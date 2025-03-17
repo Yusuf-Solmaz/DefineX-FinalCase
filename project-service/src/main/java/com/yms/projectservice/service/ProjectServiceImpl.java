@@ -10,8 +10,6 @@ import com.yms.projectservice.exception.ProjectNotFound;
 import com.yms.projectservice.mapper.ProjectMapper;
 import com.yms.projectservice.repository.ProjectRepository;
 import com.yms.projectservice.service.abstracts.ProjectService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -81,7 +79,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         System.out.println("Token: " + token);
 
-        return memberClient.findUsersByIds(memberIds, token); // ✅ Token header'dan geçiyor
+        return memberClient.findUsersByIds(memberIds, token);
     }
 
     @Override
