@@ -29,17 +29,17 @@ spring:
           filters:
             - AuthenticationFilter
 
-        - id: users
-          uri: lb://user-service
-          predicates:
-            - Path=/users/**
-          filters:
-            - AuthenticationFilter
-
         - id: tasks
           uri: lb://task-service
           predicates:
             - Path=/api/v1/tasks/**
+          filters:
+            - AuthenticationFilter
+
+        - id: comments
+          uri: lb://comment-service
+          predicates:
+            - Path=/api/v1/comments/**
           filters:
             - AuthenticationFilter
 

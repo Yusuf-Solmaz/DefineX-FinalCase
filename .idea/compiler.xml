@@ -9,10 +9,9 @@
         <outputRelativeToContentRoot value="true" />
         <module name="api-gateway" />
         <module name="config-server" />
-        <module name="comment-service" />
         <module name="eureka-server" />
       </profile>
-      <profile name="Annotation profile for task-service" enabled="true">
+      <profile name="Annotation profile for comment-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -21,9 +20,10 @@
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct-processor/1.6.3/mapstruct-processor-1.6.3.jar" />
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct/1.6.3/mapstruct-1.6.3.jar" />
         </processorPath>
-        <module name="project-service" />
+        <module name="comment-service" />
         <module name="task-service" />
         <module name="auth-service" />
+        <module name="project-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

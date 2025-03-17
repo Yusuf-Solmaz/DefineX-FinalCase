@@ -33,18 +33,15 @@ services:
       - zipkin
 
   mongodb:
-    container_name: mongodb
     image: mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: mongodb
-      MONGO_INITDB_ROOT_PASSWORD: mongodb
-    volumes:
-      - mongodb:/data/db
+    container_name: mongo_db
     ports:
-      - "27017:27017"
-    networks:
-      - postgres
-    restart: unless-stopped
+      - 27017:27017
+    volumes:
+      - mongo:/data
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=yusuf
+      - MONGO_INITDB_ROOT_PASSWORD=yusuf
 
 networks:
   postgres:
@@ -55,4 +52,4 @@ networks:
 volumes:
   postgres:
   pgadmin:
-  mongodb:
+  mongo:
