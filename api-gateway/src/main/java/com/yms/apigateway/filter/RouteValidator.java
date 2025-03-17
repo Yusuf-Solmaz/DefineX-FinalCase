@@ -34,7 +34,8 @@ public class RouteValidator {
     public static final List<String> authorizationRequiredEndpoints = List.of(
             "/api/v1/projects",
             "/api/v1/user",
-            "/api/v1/tasks"
+            "/api/v1/tasks",
+            "/api/v1/comments"
     );
 
     // isSecured predikatı, eğer istenen endpoint authorization gerektiriyorsa true döner
