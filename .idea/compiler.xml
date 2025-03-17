@@ -25,6 +25,15 @@
         <module name="auth-service" />
         <module name="project-service" />
       </profile>
+      <profile name="Annotation profile for attachment-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+        </processorPath>
+        <module name="attachment-service" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="user-service" target="21" />
@@ -33,6 +42,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
+      <module name="attachment-service" options="-parameters" />
       <module name="auth-service" options="-parameters" />
       <module name="comment-service" options="-parameters" />
       <module name="config-server" options="-parameters" />
