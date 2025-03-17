@@ -35,7 +35,8 @@ public class RouteValidator {
             "/api/v1/projects",
             "/api/v1/user",
             "/api/v1/tasks",
-            "/api/v1/comments"
+            "/api/v1/comments",
+            "/api/v1/attachments"
     );
 
     // isSecured predikatı, eğer istenen endpoint authorization gerektiriyorsa true döner
