@@ -10,7 +10,6 @@ import com.yms.task_service.repository.TaskRepository;
 import com.yms.task_service.service.abstracts.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,12 +19,28 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
+    private final ProjectServiceClient projectServiceClient;
+
 
     @Override
-    public TaskDto save(Task task) {
-        if (task.getReason() == null || task.getReason().equals("")) {
+    public TaskDto save(Task task,String token) {
+        if (task.getReason() == null || task.getReason().isEmpty()) {
             task.setReason("No reason provided.");
         }
+
+        projectServiceClient.getProjectById(task.getProjectId(), token);
+
+        List<Integer> projectMemberIds = projectServiceClient.getProjectMemberIds(task.getProjectId(), token);
+
+        List<Integer> invalidAssignees = task.getAssigneeId()
+                .stream()
+                .filter(id -> !projectMemberIds.contains(id))
+                .toList();
+
+        if (!invalidAssignees.isEmpty()) {
+            throw new IllegalArgumentException("The following assignees are not part of the project team: " + invalidAssignees);
+        }
+
         return taskMapper.toTaskDto(
                 taskRepository.save(task)
         );
