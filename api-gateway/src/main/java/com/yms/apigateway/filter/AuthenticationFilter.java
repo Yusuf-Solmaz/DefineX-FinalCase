@@ -11,7 +11,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 
 import com.yms.apigateway.util.JwtUtil;
@@ -26,11 +28,10 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-//@EnableMethodSecurity(securedEnabled = true)
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
     @Autowired
-    private RouteValidator validator;  // RouteValidator sınıfını kullanıyoruz
+    private RouteValidator validator;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -45,40 +46,50 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             ServerHttpRequest request = exchange.getRequest();
             String path = request.getURI().getPath();
 
-            // Eğer istek, açık API endpoint'lerinden birine yöneliyorsa, doğrulama yapılmaz
             if (validator.isOpenApi.test(request)) {
-                return chain.filter(exchange);  // Açık API'lere yönlendirme yapılır
+                return chain.filter(exchange);
             }
 
-            // Eğer istek, authorization gerektiren endpoint'lerden birine yöneliyorsa, token doğrulaması yapılır
             if (validator.isSecured.test(request)) {
                 String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                    String token = authHeader.substring(7);  // Token'ı alıyoruz
+                    String token = authHeader.substring(7);
                     try {
-                        jwtUtil.validateToken(token); // Token'ı doğruluyoruz
+                        jwtUtil.validateToken(token);
                         String username = jwtUtil.extractUsername(token);
-                        List<String> roles = jwtUtil.extractRoles(token);
+                        List<String> userRoles = jwtUtil.extractRoles(token);
 
-                        // Kullanıcı bilgilerini başlıkta ekliyoruz
+                        // Endpoint'e erişebilen yetkili rolleri al
+                        List<String> allowedRoles = validator.authorizationRequiredEndpoints.entrySet()
+                                .stream()
+                                .filter(entry -> path.startsWith(entry.getKey()))
+                                .map(Map.Entry::getValue)
+                                .findFirst()
+                                .orElse(Collections.emptyList());
+
+
+                        boolean hasPermission = userRoles.stream().anyMatch(allowedRoles::contains);
+                        if (!hasPermission) {
+                            return Mono.error(new RuntimeException("Forbidden: Unauthorized Entry"));
+                        }
+
+
                         ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
                                 .header("X-User-Id", username)
-                                .header("X-User-Roles", String.join(",", roles))  // Rolleri virgülle ayırıp başlığa ekliyoruz
+                                .header("X-User-Roles", String.join(",", userRoles))
                                 .build();
 
                         return chain.filter(exchange.mutate().request(modifiedRequest).build());
                     } catch (Exception e) {
-                        // Token geçersizse hata döndürüyoruz
                         return Mono.error(new RuntimeException("Invalid Token"));
                     }
                 } else {
-
                     throw new UnouthorizedEntry("Unauthorized Entry Exception");
                 }
             }
 
-            return chain.filter(exchange);  // Authorization gerekmeyen endpoint'lerde işlem yapılır
+            return chain.filter(exchange);
         };
     }
 

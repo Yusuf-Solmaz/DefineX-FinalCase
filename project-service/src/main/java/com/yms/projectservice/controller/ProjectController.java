@@ -31,10 +31,11 @@ public class ProjectController {
 
     @GetMapping("/test")
     public List<ProjectDto> findAll(HttpServletRequest request) {
-        if (hasRole(request, "ROLE_TEAM_MEMBER")) {
-            return projectService.findAll();
-        }
-        throw new RuntimeException("Unauthorized access");
+//        if (hasRole(request, "ROLE_TEAM_MEMBER")) {
+//            return projectService.findAll();
+//        }
+//        throw new RuntimeException("Unauthorized access");
+        return projectService.findAll();
     }
 
     @GetMapping("{id}")
