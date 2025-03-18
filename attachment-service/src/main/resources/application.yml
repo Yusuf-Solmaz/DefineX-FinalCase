@@ -3,3 +3,7 @@ spring:
     name: attachment-service
   config:
     import: optional:configserver:http://localhost:8888
+  servlet:
+    multipart:
+      max-request-size: 20MB
+      max-file-size: 20MB
