@@ -1,6 +1,7 @@
 package com.yms.projectservice.service;
 
 import com.yms.projectservice.client.MemberClient;
+import com.yms.projectservice.dto.PagedResponse;
 import com.yms.projectservice.dto.ProjectDto;
 import com.yms.projectservice.dto.UserResponse;
 import com.yms.projectservice.entity.Project;
@@ -12,6 +13,8 @@ import com.yms.projectservice.repository.ProjectRepository;
 import com.yms.projectservice.service.abstracts.MemberClientService;
 import com.yms.projectservice.service.abstracts.ProjectService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,30 +36,54 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectDto save(Project project) {
+    public ProjectDto save(Project project,String token) {
 
         if (project.getStatus() == null) {
             project.setStatus(ProjectStatus.BACKLOG);
         }
+
+        validateTeamMembers(project.getTeamMemberIds(),token);
 
         return projectMapper.toProjectDto(projectRepository.save(project));
     }
 
     @Override
     public void deleteById(Integer id) {
-        try{
-            projectRepository.deleteById(id);
-        } catch (ProjectNotFound e) {
-            throw new ProjectNotFound("Project not found!");
-        }
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ProjectNotFound("Project not found!"));
+        project.setDeleted(true);
+        projectRepository.save(project);
     }
 
     @Override
-    public List<ProjectDto> findAll() {
-        return projectRepository.findAll()
-                .stream()
-                .map(projectMapper::toProjectDto)
-                .collect(Collectors.toList());
+    public PagedResponse<ProjectDto> findAll(Pageable pageable) {
+        Page<ProjectDto> projects = projectRepository.findAll(pageable)
+                .map(projectMapper::toProjectDto);
+
+        return new PagedResponse<>(
+                projects.getContent(),
+                projects.getNumber(),
+                projects.getSize(),
+                projects.getTotalElements(),
+                projects.getTotalPages(),
+                projects.isLast()
+        );
+    }
+
+
+    @Override
+    public PagedResponse<ProjectDto> getAllActiveProjects(Pageable pageable) {
+        Page<ProjectDto> projects = projectRepository.findAllActives(pageable)
+                .map(projectMapper::toProjectDto);
+
+        return new PagedResponse<>(
+                projects.getContent(),
+                projects.getNumber(),
+                projects.getSize(),
+                projects.getTotalElements(),
+                projects.getTotalPages(),
+                projects.isLast()
+        );
     }
 
     @Override
@@ -82,5 +109,41 @@ public class ProjectServiceImpl implements ProjectService {
         return projectRepository.findMemberIdsByProjectId(id);
     }
 
+
+    @Override
+    public List<ProjectDto> findByDepartmentName(String name) {
+        List<ProjectDto> projects = projectRepository.findAllByDepartmentName(name)
+                .stream()
+                .map(projectMapper::toProjectDto)
+                .toList();
+        if (projects.isEmpty()) {
+            throw new ProjectNotFound("Project with name " + name + " not found!");
+        }
+        return projects;
+    }
+
+
+    private void validateTeamMembers(List<Integer> teamMemberIds,String token) {
+        if (teamMemberIds == null || teamMemberIds.isEmpty()) {
+            return; // Boşsa doğrulama yapmaya gerek yok
+        }
+
+        // Mevcut kullanıcıları al
+        List<UserResponse> existingMembers = memberClient.findUsersByIds(teamMemberIds, token);
+
+        // Gelen yanıtı ID listesine çevir
+        List<Integer> existingIds = existingMembers.stream()
+                .map(UserResponse::id)
+                .toList();
+
+        // Olmayan üyeleri belirle
+        List<Integer> invalidIds = teamMemberIds.stream()
+                .filter(id -> !existingIds.contains(id))
+                .toList();
+
+        if (!invalidIds.isEmpty()) {
+            throw new NoMembersFoundException("Invalid team member IDs: " + invalidIds);
+        }
+    }
 
 }
