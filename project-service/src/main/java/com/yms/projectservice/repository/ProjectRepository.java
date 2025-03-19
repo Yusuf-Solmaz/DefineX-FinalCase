@@ -15,9 +15,6 @@ public interface ProjectRepository extends JpaRepository<Project,Integer> {
     @Query("SELECT p.teamMemberIds FROM Project p WHERE p.id = :projectId")
     List<Integer> findMemberIdsByProjectId(@Param("projectId") Integer projectId);
 
-    @Query("SELECT p FROM Project p WHERE p.isDeleted = false")
-    List<Project> findAllActiveProjects();
-
     List<Project> findAllByDepartmentName(String name);
 
     @Query("SELECT p FROM Project p WHERE p.isDeleted = false")

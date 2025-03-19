@@ -1,6 +1,7 @@
 package com.yms.auth_service.service;
 
 import com.yms.auth_service.dto.request.RegistrationRequest;
+import com.yms.auth_service.dto.response.PagedResponse;
 import com.yms.auth_service.dto.response.UserDto;
 import com.yms.auth_service.entity.Role;
 import com.yms.auth_service.entity.User;
@@ -16,6 +17,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,37 +43,19 @@ public class UserServiceImpl implements UserService {
         return userMapper.toDto(user);
     }
 
-
-    @Transactional
-    @Override
-    public void deleteAuthenticatedUser(HttpServletRequest request, HttpServletResponse response) {
-        User user = getCurrentAuthenticatedUser();
-        tokenRepository.deleteByUser(user);
-
-        userRepository.delete(user);
-
-        SecurityContextHolder.clearContext();
-        request.getSession().invalidate();
-
-        response.setHeader("Set-Cookie", "JSESSIONID=; HttpOnly; Path=/; Max-Age=0");
-    }
-
     @Override
     public void changeUserAuthority(List<String> roleNames, Integer userId) {
-        // Kullanıcıyı ID'sine göre bul
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User Not Found!"));
 
-        // Gelen role isimlerinden ilgili Role nesnelerini bul
         List<Role> roles = roleNames.stream()
                 .map(roleName -> roleRepository.findByName(roleName)
                         .orElseThrow(() -> new RoleNotFoundException("Role not found: " + roleName)))
                 .collect(Collectors.toList());
 
-        // Kullanıcının rollerini güncelle
         user.setRoles(roles);
 
-        // Güncellenmiş kullanıcıyı kaydet
         userRepository.save(user);
     }
 
@@ -128,5 +113,28 @@ public class UserServiceImpl implements UserService {
         return users.stream()
                 .map(userMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public PagedResponse<UserDto> getAllActiveUsers(Pageable pageable) {
+
+        Page<UserDto> users = userRepository.findAllActives(pageable)
+                .map(userMapper::toDto);
+        return new PagedResponse<>(
+                users.getContent(),
+                users.getNumber(),
+                users.getSize(),
+                users.getTotalElements(),
+                users.getTotalPages(),
+                users.isLast()
+        );
+    }
+
+    @Override
+    public void deleteById(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User with ID " + id + " not found!"));
+        user.setDeleted(true);
+        userRepository.save(user);
     }
 }

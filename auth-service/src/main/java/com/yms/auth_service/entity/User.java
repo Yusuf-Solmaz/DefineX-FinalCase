@@ -67,6 +67,9 @@ public class User implements UserDetails, Principal {
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
 
+    @Column(nullable = false)
+    private boolean isDeleted = false;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles
