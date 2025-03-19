@@ -20,7 +20,7 @@ spring:
         - id: auth
           uri: lb://auth-service
           predicates:
-            - Path=/api/v1/auth/**, /api/v1/user/**, /api/v1/admin/**
+            - Path=/api/v1/auth/**, /api/v1/users/**, /api/v1/admin/**
 
         - id: projects
           uri: lb://project-service
