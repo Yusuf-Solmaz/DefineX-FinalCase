@@ -35,6 +35,8 @@ public class Project {
     @Column(name = "member_id")
     private List<Integer> teamMemberIds;
 
+    @Column(nullable = false)
+    private boolean isDeleted = false;
 
     private String departmentName;
 
