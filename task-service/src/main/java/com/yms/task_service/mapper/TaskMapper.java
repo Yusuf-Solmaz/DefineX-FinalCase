@@ -1,6 +1,7 @@
 package com.yms.task_service.mapper;
 
 import com.yms.task_service.dto.TaskDto;
+import com.yms.task_service.dto.request.TaskRequest;
 import com.yms.task_service.entity.Task;
 import com.yms.task_service.entity.TaskPriority;
 import com.yms.task_service.entity.TaskStatus;
@@ -10,12 +11,31 @@ import org.mapstruct.Mapper;
 public interface TaskMapper {
 
     TaskDto toTaskDto(Task task);
+    Task toTask(TaskRequest taskRequest);
 
-    default String mapProjectStatusToString(TaskStatus status) {
+    default String mapTaskStatusToString(TaskStatus status) {
         return status != null ? status.getTaskStatus() : null;
     }
 
-    default String mapProjectStatusToString(TaskPriority status) {
+    default String mapTaskPriorityToString(TaskPriority status) {
         return status != null ? status.getTaskPriority() : null;
+    }
+
+    default TaskStatus mapStringToTaskStatus(String status) {
+        for (TaskStatus taskStatus : TaskStatus.values()) {
+            if (taskStatus.name().equalsIgnoreCase(status)) {
+                return taskStatus;
+            }
+        }
+        return null;
+    }
+
+    default TaskPriority mapStringToTaskPriority(String status) {
+        for (TaskPriority taskPriority : TaskPriority.values()) {
+            if (taskPriority.name().equalsIgnoreCase(status)) {
+                return taskPriority;
+            }
+        }
+        return null;
     }
 }
