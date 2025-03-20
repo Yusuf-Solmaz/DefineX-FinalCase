@@ -3,6 +3,7 @@ package com.yms.projectservice.service;
 import com.yms.projectservice.client.MemberClient;
 import com.yms.projectservice.dto.PagedResponse;
 import com.yms.projectservice.dto.ProjectDto;
+import com.yms.projectservice.dto.ProjectRequest;
 import com.yms.projectservice.dto.UserResponse;
 import com.yms.projectservice.entity.Project;
 import com.yms.projectservice.entity.ProjectStatus;
@@ -36,13 +37,15 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectDto save(Project project,String token) {
+    public ProjectDto save(ProjectRequest projectRequest, String token) {
+
+        Project project = projectMapper.toProject(projectRequest);
 
         if (project.getStatus() == null) {
             project.setStatus(ProjectStatus.BACKLOG);
         }
 
-        validateTeamMembers(project.getTeamMemberIds(),token);
+        validateTeamMembers(project.getTeamMemberIds(), token);
 
         return projectMapper.toProjectDto(projectRepository.save(project));
     }
