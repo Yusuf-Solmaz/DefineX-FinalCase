@@ -1,10 +1,12 @@
 package com.yms.projectservice.mapper;
 
 import com.yms.projectservice.dto.ProjectDto;
+import com.yms.projectservice.dto.ProjectRequest;
 import com.yms.projectservice.entity.Project;
 import com.yms.projectservice.entity.ProjectStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
 
 @Mapper(componentModel = "spring")
@@ -16,18 +18,22 @@ public interface ProjectMapper {
     @Mapping(source = "projectStatus", target = "status")
     Project toProject(ProjectDto projectDto);
 
+    @Mapping(source = "projectStatus", target = "status")
+    Project toProject(ProjectRequest projectRequest);
+
     default String mapProjectStatusToString(ProjectStatus status) {
         return status != null ? status.getProjectStatus() : null;
     }
 
     default ProjectStatus mapStringToProjectStatus(String status) {
         for (ProjectStatus projectStatus : ProjectStatus.values()) {
-            if (projectStatus.getProjectStatus().equalsIgnoreCase(status)) {
+            if (projectStatus.name().equalsIgnoreCase(status)) {
                 return projectStatus;
             }
         }
         return null;
     }
+
 }
 
 
