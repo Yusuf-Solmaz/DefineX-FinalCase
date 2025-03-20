@@ -8,5 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CommentRepository extends MongoRepository<Comment, String> {
-    Page<Comment> findAllByTaskId(Integer taskId, Pageable pageable);
+    Page<Comment> findAllByTaskIdAndIsDeletedFalse(Integer taskId, Pageable pageable);
+
 }
