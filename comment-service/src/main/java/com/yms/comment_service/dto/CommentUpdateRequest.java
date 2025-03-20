@@ -3,8 +3,6 @@ package com.yms.comment_service.dto;
 import lombok.Builder;
 
 @Builder
-public record CommentRequest(
-        Integer taskId,
+public record CommentUpdateRequest(
         String content
-) {
-}
+) {}

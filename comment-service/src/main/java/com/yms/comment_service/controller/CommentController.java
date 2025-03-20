@@ -1,10 +1,10 @@
 package com.yms.comment_service.controller;
 
+import com.yms.comment_service.dto.CommentCreateRequest;
 import com.yms.comment_service.dto.CommentDto;
-import com.yms.comment_service.dto.CommentRequest;
+import com.yms.comment_service.dto.CommentUpdateRequest;
 import com.yms.comment_service.dto.PagedResponse;
 import com.yms.comment_service.service.abstracts.CommentService;
-import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +24,19 @@ public class CommentController {
 
     private final CommentService commentService;
 
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<CommentDto> createComment(
+            @RequestBody @Valid CommentCreateRequest comment,
+            @RequestHeader("Authorization") String token,
+            HttpServletRequest request) {
+        CommentDto commentDto = commentService.addComment(comment, getAuthenticatedUserEmail(request),token);
+
+        return ResponseEntity.created(
+                URI.create("/api/v1/comments"+"/"+commentDto.taskId())
+        ).body(commentDto);
+    }
+
     @GetMapping("{taskId}")
     public ResponseEntity<PagedResponse<CommentDto>> getAllComments(
             @PathVariable Integer taskId,
@@ -34,16 +47,15 @@ public class CommentController {
         return ResponseEntity.ok(commentService.getCommentsByTaskId(taskId, pageable));
     }
 
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CommentDto> createComment(@RequestBody @Valid CommentRequest comment, @RequestHeader("Authorization") String token, HttpServletRequest request) {
-        CommentDto commentDto = commentService.addComment(comment, getAuthenticatedUserEmail(request),token);
-
-        return ResponseEntity.created(
-                URI.create("/api/v1/comments"+"/"+commentDto.taskId())
-        ).body(commentDto);
+    @PutMapping("/{id}")
+    public ResponseEntity<CommentDto> updateComment(
+            @PathVariable String id,
+            @RequestBody @Valid CommentUpdateRequest updateRequest
+    ) {
+        CommentDto updatedComment = commentService.updateComment(id, updateRequest);
+        return ResponseEntity.ok(updatedComment);
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteComment(@PathVariable  String id) {

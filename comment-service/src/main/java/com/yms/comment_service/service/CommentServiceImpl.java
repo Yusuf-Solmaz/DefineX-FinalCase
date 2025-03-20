@@ -1,7 +1,8 @@
 package com.yms.comment_service.service;
 
+import com.yms.comment_service.dto.CommentCreateRequest;
 import com.yms.comment_service.dto.CommentDto;
-import com.yms.comment_service.dto.CommentRequest;
+import com.yms.comment_service.dto.CommentUpdateRequest;
 import com.yms.comment_service.dto.PagedResponse;
 import com.yms.comment_service.entity.Comment;
 import com.yms.comment_service.exception.CommentNotFound;
@@ -24,7 +25,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     @Override
-    public CommentDto addComment(CommentRequest response, String userEmail, String token) {
+    public CommentDto addComment(CommentCreateRequest response, String userEmail, String token) {
 
         taskClient.findTaskById(response.taskId(),token);
 
@@ -45,6 +46,21 @@ public class CommentServiceImpl implements CommentService {
                 commentPage.getTotalPages(),
                 commentPage.isLast()
         );
+    }
+
+    @Override
+    public CommentDto updateComment(String commentId, CommentUpdateRequest updateRequest) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentNotFound("Comment not found with id: " + commentId));
+
+        if (comment.getIsDeleted()) {
+            throw new CommentNotFound("Cannot update a deleted comment.");
+        }
+
+        comment.setContent(updateRequest.content());
+        Comment updatedComment = commentRepository.save(comment);
+
+        return commentMapper.toCommentDto(updatedComment);
     }
 
     @Override
