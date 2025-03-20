@@ -1,6 +1,7 @@
 package com.yms.task_service.service;
 
 import com.yms.task_service.dto.TaskDto;
+import com.yms.task_service.dto.request.TaskRequest;
 import com.yms.task_service.entity.Task;
 import com.yms.task_service.entity.TaskStatus;
 import com.yms.task_service.exception.ProjectNotFound;
@@ -23,7 +24,9 @@ public class TaskServiceImpl implements TaskService {
 
 
     @Override
-    public TaskDto save(Task task,String token) {
+    public TaskDto save(TaskRequest taskRequest, String token) {
+        Task task = taskMapper.toTask(taskRequest);
+
         if (task.getReason() == null || task.getReason().isEmpty()) {
             task.setReason("No reason provided.");
         }
@@ -54,6 +57,13 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public TaskDto findByIdAndNotCancelled(Integer projectId) {
+        return taskRepository.findByIdAndNotCancelled(projectId)
+                .map(taskMapper::toTaskDto)
+                .orElseThrow(() -> new TaskNotFound("No Task Found with Project ID: " + projectId ));
+    }
+
+    @Override
     public List<TaskDto> findAllByProjectId(Integer projectId) {
         List<Task> tasks = taskRepository.findAllByProjectId(projectId);
 
@@ -77,28 +87,25 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.save(task);
     }
 
-    public Task updateTaskStatus(Integer taskId, TaskStatus newStatus, String reason) {
+    @Override
+    public TaskDto updateTaskStatus(Integer taskId, TaskStatus newStatus, String reason) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFound("Task not found"));
 
-        // Eğer görev tamamlandıysa tekrar değiştirilemez
         if (task.getStatus() == TaskStatus.COMPLETED) {
             throw new RuntimeException("Completed tasks cannot be updated.");
         }
 
-        // Eğer görev CANCELLED veya BLOCKED oluyorsa, bir sebep girilmeli
         if ((newStatus == TaskStatus.CANCELLED || newStatus == TaskStatus.BLOCKED) && (reason == null || reason.isEmpty())) {
             throw new RuntimeException("A reason must be provided for CANCELLED or BLOCKED status.");
         }
 
-        // İş akışına uygun mu kontrol et (Örneğin, tamamlanmış bir görev iptal edilemez)
         validateStateTransition(task.getStatus(), newStatus);
 
-        // Yeni durumu ata ve kaydet
         task.setStatus(newStatus);
         taskRepository.save(task);
 
-        return task;
+        return taskMapper.toTaskDto(task);
     }
 
     private void validateStateTransition(TaskStatus currentStatus, TaskStatus newStatus) {
@@ -110,7 +117,6 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException("Tasks can only be blocked if they are in IN_ANALYSIS or IN_PROGRESS.");
         }
 
-        // İzin verilen geçişler
         List<TaskStatus> allowedTransitions = switch (currentStatus) {
             case BACKLOG -> List.of(TaskStatus.IN_ANALYSIS);
             case IN_ANALYSIS -> List.of(TaskStatus.IN_PROGRESS, TaskStatus.BLOCKED, TaskStatus.CANCELLED);
