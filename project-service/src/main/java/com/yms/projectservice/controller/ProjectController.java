@@ -1,11 +1,13 @@
 package com.yms.projectservice.controller;
 
 import com.yms.projectservice.dto.PagedResponse;
+import com.yms.projectservice.dto.ProjectRequest;
 import com.yms.projectservice.dto.UserResponse;
 import com.yms.projectservice.dto.ProjectDto;
 import com.yms.projectservice.entity.Project;
 import com.yms.projectservice.service.abstracts.ProjectService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -57,10 +59,15 @@ public class ProjectController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ProjectDto> createProject(@RequestBody Project project, @RequestHeader("Authorization") String token){
+    public ResponseEntity<ProjectDto> createProject(
+            @RequestBody @Valid ProjectRequest projectRequest,
+            @RequestHeader("Authorization") String token) {
+
+        ProjectDto savedProject = projectService.save(projectRequest, token);
+
         return ResponseEntity.created(
-                URI.create("/api/v1/projects"+"/"+project.getId())
-        ).body(projectService.save(project,token));
+                URI.create("/api/v1/projects/" + savedProject.id())
+        ).body(savedProject);
     }
 
     @DeleteMapping("{id}")
