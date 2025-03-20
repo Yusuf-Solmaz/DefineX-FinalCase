@@ -2,7 +2,8 @@ package com.yms.comment_service;
 
 import com.yms.comment_service.controller.CommentController;
 import com.yms.comment_service.dto.CommentDto;
-import com.yms.comment_service.dto.CommentRequest;
+import com.yms.comment_service.dto.CommentCreateRequest;
+import com.yms.comment_service.dto.CommentUpdateRequest;
 import com.yms.comment_service.dto.PagedResponse;
 import com.yms.comment_service.exception.GlobalExceptionHandler;
 import com.yms.comment_service.service.abstracts.CommentService;
@@ -44,6 +45,36 @@ class CommentControllerTest {
     }
 
     @Test
+    void testUpdateComment_ShouldReturnUpdatedComment() throws Exception {
+        // Arrange
+        CommentUpdateRequest updateRequest = CommentUpdateRequest.builder()
+                .content("Updated test comment")
+                .build();
+
+        CommentDto updatedCommentDto = CommentDto.builder()
+                .taskId(1)
+                .userEmail("test@example.com")
+                .content("Updated test comment")
+                .createdAt(null)
+                .build();
+
+        when(commentService.updateComment(anyString(), any(CommentUpdateRequest.class)))
+                .thenReturn(updatedCommentDto);
+
+        // Act and Assert
+        mockMvc.perform(put("/api/v1/comments/{id}", "123")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest))
+                        .header("Authorization", "Bearer token")
+                        .header("X-User-Id", "test@example.com"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").value("Updated test comment"))
+                .andExpect(jsonPath("$.userEmail").value("test@example.com"));
+
+        verify(commentService, times(1)).updateComment(eq("123"), any(CommentUpdateRequest.class));
+    }
+
+    @Test
     void testGetAllComments_ShouldReturnPagedResponse() throws Exception {
         // Arrange
         CommentDto commentDto = CommentDto.builder()
@@ -77,7 +108,7 @@ class CommentControllerTest {
     @Test
     void testCreateComment_ShouldReturnCreatedComment() throws Exception {
         // Arrange
-        CommentRequest commentRequest = CommentRequest.builder()
+        CommentCreateRequest commentCreateRequest = CommentCreateRequest.builder()
                 .taskId(1)
                 .content("This is a test comment")
                 .build();
@@ -94,7 +125,7 @@ class CommentControllerTest {
         // Act and Assert
         mockMvc.perform(post("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(commentRequest))
+                        .content(objectMapper.writeValueAsString(commentCreateRequest))
                         .header("Authorization", "Bearer token")
                         .header("X-User-Id", "test@example.com"))
                 .andExpect(status().isCreated())

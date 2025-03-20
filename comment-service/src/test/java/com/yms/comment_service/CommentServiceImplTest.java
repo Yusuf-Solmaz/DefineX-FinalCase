@@ -4,10 +4,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
-import com.yms.comment_service.dto.CommentDto;
-import com.yms.comment_service.dto.CommentRequest;
-import com.yms.comment_service.dto.PagedResponse;
-import com.yms.comment_service.dto.TaskResponse;
+
+import com.yms.comment_service.dto.*;
 import com.yms.comment_service.entity.Comment;
 import com.yms.comment_service.exception.CommentNotFound;
 import com.yms.comment_service.mapper.CommentMapper;
@@ -43,14 +41,21 @@ public class CommentServiceImplTest {
     @InjectMocks
     private CommentServiceImpl commentService;
 
-    private CommentRequest commentRequest;
+    private CommentCreateRequest commentCreateRequest;
     private Comment comment;
+    private Comment existingComment;
+    private Comment updatedComment;
+
     private CommentDto commentDto;
+    private CommentDto updatedCommentDto;
     private TaskResponse taskResponse;
+    private CommentUpdateRequest updateRequest;
 
     @BeforeEach
     void setUp() {
-        commentRequest = CommentRequest.builder()
+        updateRequest = new CommentUpdateRequest("Updated content");
+
+        commentCreateRequest = CommentCreateRequest.builder()
                 .taskId(1)
                 .content("Test comment content")
                 .build();
@@ -64,10 +69,28 @@ public class CommentServiceImplTest {
                 .isDeleted(false)
                 .build();
 
+        existingComment = Comment.builder()
+                .id("1")
+                .taskId(1)
+                .userEmail("user@example.com")
+                .content("Old comment content")
+                .createdAt(LocalDateTime.now())
+                .isDeleted(false)
+                .build();
+
+        updatedComment = Comment.builder()
+                .id("1")
+                .taskId(1)
+                .userEmail("user@example.com")
+                .content("Updated comment content")
+                .createdAt(existingComment.getCreatedAt())
+                .isDeleted(false)
+                .build();
+
         commentDto = CommentDto.builder()
                 .taskId(1)
                 .userEmail("user@example.com")
-                .content("Test comment content")
+                .content("Updated comment content")
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -79,20 +102,49 @@ public class CommentServiceImplTest {
                 .status("Open")
                 .reason("No reason")
                 .build();
+
+        updatedCommentDto = CommentDto.builder()
+                .taskId(1)
+                .userEmail("user@example.com")
+                .content(updateRequest.content())
+                .createdAt(existingComment.getCreatedAt())
+                .build();
+    }
+
+    @Test
+    void testUpdateComment_ShouldUpdateAndReturnDto() {
+
+
+
+        when(commentRepository.findById("1")).thenReturn(Optional.of(existingComment));
+        when(commentRepository.save(any(Comment.class))).thenReturn(updatedComment);
+        when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(updatedCommentDto);
+
+        CommentDto result = commentService.updateComment("1", updateRequest);
+
+        assertNotNull(result);
+        assertEquals(updateRequest.content(), result.content());
+        verify(commentRepository).save(any(Comment.class));
+    }
+
+    @Test
+    void testUpdateComment_ShouldThrowException_WhenNotFound() {
+        CommentUpdateRequest updateRequest = new CommentUpdateRequest("Updated content");
+        when(commentRepository.findById("nonExistentId")).thenReturn(Optional.empty());
+
+        assertThrows(CommentNotFound.class, () -> commentService.updateComment("nonExistentId", updateRequest));
     }
 
     @Test
     void testAddComment_ShouldAddAndReturnDto() {
-        // Arrange
+
         when(taskClient.findTaskById(anyInt(), anyString())).thenReturn(taskResponse);
-        when(commentMapper.toComment(any(CommentRequest.class), anyString())).thenReturn(comment);
+        when(commentMapper.toComment(any(CommentCreateRequest.class), anyString())).thenReturn(comment);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(commentDto);
 
-        // Act
-        CommentDto result = commentService.addComment(commentRequest, "user@example.com", "dummyToken");
+        CommentDto result = commentService.addComment(commentCreateRequest, "user@example.com", "dummyToken");
 
-        // Assert
         assertNotNull(result);
         assertEquals(commentDto.content(), result.content());
         verify(taskClient).findTaskById(anyInt(), anyString());
@@ -101,7 +153,6 @@ public class CommentServiceImplTest {
 
     @Test
     void testGetCommentsByTaskId_ShouldReturnPagedResponse() {
-        // Arrange
         Page<Comment> commentPage = new PageImpl<>(List.of(comment));
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -109,10 +160,8 @@ public class CommentServiceImplTest {
         when(commentRepository.findAllByTaskIdAndIsDeletedFalse(anyInt(), eq(pageable)))
                 .thenReturn(commentPage);
 
-        // Act
         PagedResponse<CommentDto> result = commentService.getCommentsByTaskId(1, pageable);
 
-        // Assert
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
         assertEquals(commentDto.content(), result.getContent().getFirst().content());
@@ -121,7 +170,6 @@ public class CommentServiceImplTest {
 
     @Test
     void testDeleteComment_ShouldDeleteComment() {
-        // Arrange
         Comment existingComment = Comment.builder()
                 .id("1")
                 .taskId(1)
@@ -134,20 +182,15 @@ public class CommentServiceImplTest {
         when(commentRepository.findById(anyString())).thenReturn(Optional.of(existingComment));
         when(commentRepository.save(any(Comment.class))).thenReturn(existingComment);
 
-        // Act
         commentService.deleteComment("1");
-
-        // Assert
         assertTrue(existingComment.getIsDeleted());
         verify(commentRepository).save(any(Comment.class));
     }
 
     @Test
     void testDeleteComment_ShouldThrowException_WhenNotFound() {
-        // Arrange
         when(commentRepository.findById(anyString())).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(CommentNotFound.class, () -> commentService.deleteComment("nonExistentId"));
     }
 }
