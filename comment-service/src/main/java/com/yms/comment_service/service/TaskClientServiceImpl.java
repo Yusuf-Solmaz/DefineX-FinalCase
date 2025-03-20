@@ -22,7 +22,7 @@ public class TaskClientServiceImpl implements TaskClientService {
         }catch (FeignException.NotFound e){
             throw new TaskNotFoundException("Task with ID " + id + " not found!");
         }catch (Exception e){
-            throw new RuntimeException("Project service is unavailable. Please try again later.");
+            throw new RuntimeException("Task service is unavailable. Please try again later.");
         }
     }
 }
