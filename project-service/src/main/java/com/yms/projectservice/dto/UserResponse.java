@@ -1,8 +1,9 @@
 package com.yms.projectservice.dto;
 
-import org.springframework.security.core.GrantedAuthority;
-
+import lombok.Builder;
 import java.util.List;
+
+@Builder
 public record UserResponse(
         Integer id,
         String firstname,
