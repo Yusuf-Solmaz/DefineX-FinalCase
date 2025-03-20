@@ -1,6 +1,5 @@
 package com.yms.projectservice.service;
 
-import com.yms.projectservice.client.MemberClient;
 import com.yms.projectservice.dto.PagedResponse;
 import com.yms.projectservice.dto.ProjectDto;
 import com.yms.projectservice.dto.ProjectRequest;
@@ -19,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -128,18 +126,15 @@ public class ProjectServiceImpl implements ProjectService {
 
     private void validateTeamMembers(List<Integer> teamMemberIds,String token) {
         if (teamMemberIds == null || teamMemberIds.isEmpty()) {
-            return; // Boşsa doğrulama yapmaya gerek yok
+            return;
         }
 
-        // Mevcut kullanıcıları al
         List<UserResponse> existingMembers = memberClient.findUsersByIds(teamMemberIds, token);
 
-        // Gelen yanıtı ID listesine çevir
         List<Integer> existingIds = existingMembers.stream()
                 .map(UserResponse::id)
                 .toList();
 
-        // Olmayan üyeleri belirle
         List<Integer> invalidIds = teamMemberIds.stream()
                 .filter(id -> !existingIds.contains(id))
                 .toList();
