@@ -1,7 +1,6 @@
 package com.yms.auth_service.controller;
 
 import com.yms.auth_service.dto.request.RegistrationRequest;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication")
 public class AuthenticationController {
 
     private final AuthenticationService service;
