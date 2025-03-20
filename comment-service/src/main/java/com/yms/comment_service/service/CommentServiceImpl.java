@@ -1,9 +1,10 @@
 package com.yms.comment_service.service;
 
 import com.yms.comment_service.dto.CommentDto;
-import com.yms.comment_service.dto.CommentResponse;
+import com.yms.comment_service.dto.CommentRequest;
 import com.yms.comment_service.dto.PagedResponse;
 import com.yms.comment_service.entity.Comment;
+import com.yms.comment_service.exception.CommentNotFound;
 import com.yms.comment_service.mapper.CommentMapper;
 import com.yms.comment_service.repository.CommentRepository;
 import com.yms.comment_service.service.abstracts.CommentService;
@@ -23,7 +24,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     @Override
-    public CommentDto addComment(CommentResponse response, String userEmail,String token) {
+    public CommentDto addComment(CommentRequest response, String userEmail, String token) {
 
         taskClient.findTaskById(response.taskId(),token);
 
@@ -33,7 +34,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public PagedResponse<CommentDto> getCommentsByTaskId(Integer taskId, Pageable pageable) {
-        Page<CommentDto> commentPage = commentRepository.findAllByTaskId(taskId, pageable)
+        Page<CommentDto> commentPage = commentRepository.findAllByTaskIdAndIsDeletedFalse(taskId, pageable)
                 .map(commentMapper::toCommentDto);
 
         return new PagedResponse<>(
@@ -45,5 +46,15 @@ public class CommentServiceImpl implements CommentService {
                 commentPage.isLast()
         );
     }
+
+    @Override
+    public void deleteComment(String commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentNotFound("Comment not found with id: " + commentId));
+
+        comment.setIsDeleted(true);
+        commentRepository.save(comment);
+    }
+
 }
 
