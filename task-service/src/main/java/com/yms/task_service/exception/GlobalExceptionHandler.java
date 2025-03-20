@@ -1,10 +1,16 @@
 package com.yms.task_service.exception;
 
 import com.yms.task_service.exception.root_exception.RootException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -37,5 +43,39 @@ public class GlobalExceptionHandler {
                 System.currentTimeMillis()
         );
         return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<RootException> handleValidationExceptions(MethodArgumentNotValidException ex) {
+
+        RootException exception = new RootException();
+
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+
+            String errorMessage = error.getDefaultMessage();
+
+            exception.setError(errorMessage);
+            exception.setStatus(HttpStatus.BAD_REQUEST.value());
+        });
+
+
+        return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<RootException> handleConstraintViolationExceptions(ConstraintViolationException ex) {
+
+        RootException exception = new RootException();
+
+        ex.getConstraintViolations().forEach(violation -> {
+
+            String errorMessage = violation.getMessage();
+
+            exception.setError(errorMessage);
+            exception.setStatus(HttpStatus.BAD_REQUEST.value());
+
+        });
+
+        return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
     }
 }
