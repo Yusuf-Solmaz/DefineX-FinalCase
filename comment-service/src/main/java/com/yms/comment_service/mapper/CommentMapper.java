@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
 public interface CommentMapper {
 
     @Mapping(source = "deleted", target = "isDeleted")
-    CommentResponse toCommentDto(Comment comment);
+    CommentResponse toCommentResponse(Comment comment);
 
     Comment toComment(CommentCreateRequest response, String userEmail);
 }
