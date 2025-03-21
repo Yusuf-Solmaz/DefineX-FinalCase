@@ -12,4 +12,5 @@ public interface CommentService {
     PagedResponse<CommentResponse> getCommentsByTaskId(Integer taskId, Pageable pageable);
     void deleteComment(String commentId);
     CommentResponse updateComment(String commentId, CommentUpdateRequest updateRequest);
+    CommentResponse getCommentById(String commentId);
 }

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -27,16 +28,27 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentResponse addComment(CommentCreateRequest response, String userEmail, String token) {
 
-        taskClient.findTaskById(response.taskId(),token);
+        taskClient.findTaskById(response.taskId(), token);
 
-        Comment comment = commentMapper.toComment(response,userEmail);
-        return commentMapper.toCommentDto(commentRepository.save(comment));
+        System.out.println("CommentCreateRequest id: " + response.taskId());
+
+
+        Comment comment = commentMapper.toComment(response, userEmail);
+        System.out.println("comment token: " + comment.getId());
+
+        if (comment.getCreatedAt() == null) {
+            comment.setCreatedAt(LocalDateTime.now());
+        }
+
+
+        Comment savedComment = commentRepository.save(comment);
+        return commentMapper.toCommentResponse(savedComment);
     }
 
     @Override
     public PagedResponse<CommentResponse> getCommentsByTaskId(Integer taskId, Pageable pageable) {
         Page<CommentResponse> commentPage = commentRepository.findAllByTaskIdAndIsDeletedFalse(taskId, pageable)
-                .map(commentMapper::toCommentDto);
+                .map(commentMapper::toCommentResponse);
 
         return new PagedResponse<>(
                 commentPage.getContent(),
@@ -53,17 +65,24 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFound("Comment not found with id: " + commentId));
 
-        if (comment.getIsDeleted()) {
+        if (comment.isDeleted()) {
             throw new CommentNotFound("Cannot update a deleted comment.");
         }
-        if (comment.getContent() != null  && !comment.getContent().isEmpty()) {
+        if (comment.getContent() == null  || comment.getContent().isEmpty()) {
             throw new RuntimeException("Content cannot be empty");
         }
 
         comment.setContent(updateRequest.content());
         Comment updatedComment = commentRepository.save(comment);
 
-        return commentMapper.toCommentDto(updatedComment);
+        return commentMapper.toCommentResponse(updatedComment);
+    }
+
+    @Override
+    public CommentResponse getCommentById(String commentId) {
+        return commentRepository.findById(commentId)
+                .map(commentMapper::toCommentResponse)
+                .orElseThrow(() -> new CommentNotFound("Comment not found with id: " + commentId));
     }
 
     @Override
@@ -71,7 +90,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFound("Comment not found with id: " + commentId));
 
-        comment.setIsDeleted(true);
+        comment.setDeleted(true);
         commentRepository.save(comment);
     }
 
