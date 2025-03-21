@@ -10,7 +10,7 @@ import com.yms.projectservice.dto.response.PagedResponse;
 import com.yms.projectservice.dto.response.ProjectResponse;
 import com.yms.projectservice.dto.response.UserResponse;
 import com.yms.projectservice.entity.Project;
-import com.yms.projectservice.exception.ProjectNotFound;
+import com.yms.projectservice.exception.ProjectNotFoundException;
 import com.yms.projectservice.mapper.ProjectMapper;
 import com.yms.projectservice.repository.ProjectRepository;
 import com.yms.projectservice.service.ProjectServiceImpl;
@@ -110,7 +110,7 @@ public class ProjectServiceImplTest {
     void testSave_ShouldSaveAndReturnProjectDto() {
         when(projectMapper.toProject(any(ProjectCreateRequest.class))).thenReturn(project);
         when(projectRepository.save(any(Project.class))).thenReturn(project);
-        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectResponse);
+        when(projectMapper.toProjectResponse(any(Project.class))).thenReturn(projectResponse);
         when(memberClient.findUsersByIds(any(), any())).thenReturn(userResponses);
 
         ProjectResponse result = projectService.save(projectCreateRequest, "dummyToken");
@@ -123,7 +123,7 @@ public class ProjectServiceImplTest {
     @Test
     void testFindById_ShouldReturnProjectDto() {
         when(projectRepository.findById(anyInt())).thenReturn(Optional.of(project));
-        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectResponse);
+        when(projectMapper.toProjectResponse(any(Project.class))).thenReturn(projectResponse);
 
         ProjectResponse result = projectService.findById(1);
 
@@ -136,7 +136,7 @@ public class ProjectServiceImplTest {
     void testFindById_ShouldThrowException_WhenProjectNotFound() {
         when(projectRepository.findById(anyInt())).thenReturn(Optional.empty());
 
-        assertThrows(ProjectNotFound.class, () -> projectService.findById(1));
+        assertThrows(ProjectNotFoundException.class, () -> projectService.findById(1));
     }
 
     @Test
@@ -154,7 +154,7 @@ public class ProjectServiceImplTest {
     void testDeleteById_ShouldThrowException_WhenProjectNotFound() {
         when(projectRepository.findById(anyInt())).thenReturn(Optional.empty());
 
-        assertThrows(ProjectNotFound.class, () -> projectService.deleteById(1));
+        assertThrows(ProjectNotFoundException.class, () -> projectService.deleteById(1));
     }
 
     @Test
@@ -163,7 +163,7 @@ public class ProjectServiceImplTest {
         PageImpl<Project> projectPage = new PageImpl<>(List.of(project));
 
         when(projectRepository.findAll(pageable)).thenReturn(projectPage);
-        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectResponse);
+        when(projectMapper.toProjectResponse(any(Project.class))).thenReturn(projectResponse);
 
         PagedResponse<ProjectResponse> result = projectService.findAll(pageable);
 
@@ -179,7 +179,7 @@ public class ProjectServiceImplTest {
         PageImpl<Project> projectPage = new PageImpl<>(List.of(project));
 
         when(projectRepository.findAllActives(pageable)).thenReturn(projectPage);
-        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectResponse);
+        when(projectMapper.toProjectResponse(any(Project.class))).thenReturn(projectResponse);
 
         PagedResponse<ProjectResponse> result = projectService.getAllActiveProjects(pageable);
 
@@ -214,7 +214,7 @@ public class ProjectServiceImplTest {
     @Test
     void testFindByDepartmentName_ShouldReturnProjects() {
         when(projectRepository.findAllByDepartmentName(anyString())).thenReturn(List.of(project));
-        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectResponse);
+        when(projectMapper.toProjectResponse(any(Project.class))).thenReturn(projectResponse);
 
         List<ProjectResponse> result = projectService.findByDepartmentName("IT");
 
@@ -228,7 +228,7 @@ public class ProjectServiceImplTest {
     void testFindByDepartmentName_ShouldThrowException_WhenNoProjectsFound() {
         when(projectRepository.findAllByDepartmentName(anyString())).thenReturn(List.of());
 
-        assertThrows(ProjectNotFound.class, () -> projectService.findByDepartmentName("NonExistent"));
+        assertThrows(ProjectNotFoundException.class, () -> projectService.findByDepartmentName("NonExistent"));
     }
 }
 

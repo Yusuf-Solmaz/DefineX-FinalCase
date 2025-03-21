@@ -2,9 +2,9 @@ package com.yms.task_service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yms.task_service.controller.TaskController;
-import com.yms.task_service.dto.TaskResponse;
-import com.yms.task_service.dto.UpdateTaskStatusRequest;
-import com.yms.task_service.dto.request.TaskRequest;
+import com.yms.task_service.dto.response.TaskResponse;
+import com.yms.task_service.dto.request.TaskStatusUpdateRequest;
+import com.yms.task_service.dto.request.TaskCreateRequest;
 import com.yms.task_service.entity.TaskStatus;
 import com.yms.task_service.exception.GlobalExceptionHandler;
 import com.yms.task_service.service.abstracts.TaskService;
@@ -35,7 +35,7 @@ class TaskControllerTest {
 
     private ObjectMapper objectMapper;
 
-    private TaskRequest taskRequest;
+    private TaskCreateRequest taskCreateRequest;
     private TaskResponse taskResponse;
 
     @BeforeEach
@@ -47,7 +47,7 @@ class TaskControllerTest {
 
         objectMapper = new ObjectMapper();
 
-        taskRequest = TaskRequest.builder()
+        taskCreateRequest = TaskCreateRequest.builder()
                 .title("Test Task")
                 .description("Test task description")
                 .projectId(1)
@@ -70,11 +70,11 @@ class TaskControllerTest {
 
     @Test
     void createTask_ShouldReturnCreated() throws Exception {
-        when(taskService.save(any(TaskRequest.class), anyString())).thenReturn(taskResponse);
+        when(taskService.save(any(TaskCreateRequest.class), anyString())).thenReturn(taskResponse);
 
         mockMvc.perform(post("/api/v1/tasks")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(taskRequest))
+                        .content(objectMapper.writeValueAsString(taskCreateRequest))
                         .header("Authorization", "Bearer some_token"))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/api/v1/tasks/1"))
@@ -105,7 +105,7 @@ class TaskControllerTest {
 
     @Test
     void updateTaskStatus_ShouldReturnUpdatedTask() throws Exception {
-        UpdateTaskStatusRequest statusRequest = new UpdateTaskStatusRequest(TaskStatus.COMPLETED, "Completed successfully");
+        TaskStatusUpdateRequest statusRequest = new TaskStatusUpdateRequest(TaskStatus.COMPLETED, "Completed successfully");
 
         when(taskService.updateTaskStatus(1, TaskStatus.COMPLETED, "Completed successfully")).thenReturn(taskResponse);
 

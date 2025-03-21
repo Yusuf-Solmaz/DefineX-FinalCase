@@ -1,12 +1,12 @@
 package com.yms.task_service;
 
-import com.yms.task_service.dto.ProjectResponse;
-import com.yms.task_service.dto.TaskResponse;
-import com.yms.task_service.dto.request.TaskRequest;
+import com.yms.task_service.dto.request.TaskCreateRequest;
+import com.yms.task_service.dto.response.ProjectResponse;
+import com.yms.task_service.dto.response.TaskResponse;
 import com.yms.task_service.entity.Task;
 import com.yms.task_service.entity.TaskPriority;
 import com.yms.task_service.entity.TaskStatus;
-import com.yms.task_service.exception.TaskNotFound;
+import com.yms.task_service.exception.TaskNotFoundException;
 import com.yms.task_service.mapper.TaskMapper;
 import com.yms.task_service.repository.TaskRepository;
 import com.yms.task_service.service.ProjectServiceClient;
@@ -37,12 +37,12 @@ class TaskServiceImplTest {
 	@InjectMocks
 	private TaskServiceImpl taskService;
 
-	private TaskRequest validTaskRequest;
+	private TaskCreateRequest validTaskCreateRequest;
 
 	@BeforeEach
 	void setUp() {
 
-		validTaskRequest = TaskRequest.builder()
+		validTaskCreateRequest = TaskCreateRequest.builder()
 				.title("Task Title")
 				.description("Task Description")
 				.projectId(1)
@@ -76,14 +76,14 @@ class TaskServiceImplTest {
 				.reason("Initial Task")
 				.build();
 
-		when(taskMapper.toTask(validTaskRequest)).thenReturn(task);
+		when(taskMapper.toTask(validTaskCreateRequest)).thenReturn(task);
 		when(taskRepository.save(task)).thenReturn(task);
-		when(taskMapper.toTaskDto(task)).thenReturn(taskResponse);
+		when(taskMapper.toTaskResponse(task)).thenReturn(taskResponse);
 		when(projectServiceClient.getProjectById(anyInt(), anyString())).thenReturn(new ProjectResponse(1L, "Project", "Description", "Development", "Active",false));
 		when(projectServiceClient.getProjectMemberIds(anyInt(), anyString())).thenReturn(Arrays.asList(1, 2));
 
 		// Act
-		TaskResponse savedTask = taskService.save(validTaskRequest, "valid-token");
+		TaskResponse savedTask = taskService.save(validTaskCreateRequest, "valid-token");
 
 		// Assert
 		assertNotNull(savedTask);
@@ -116,7 +116,7 @@ class TaskServiceImplTest {
 				.build();
 
 		when(taskRepository.findById(1)).thenReturn(Optional.of(task));
-		when(taskMapper.toTaskDto(task)).thenReturn(taskResponse);
+		when(taskMapper.toTaskResponse(task)).thenReturn(taskResponse);
 
 		// Act
 		TaskResponse foundTask = taskService.findById(1);
@@ -132,7 +132,7 @@ class TaskServiceImplTest {
 		when(taskRepository.findById(1)).thenReturn(Optional.empty());
 
 		// Act & Assert
-		TaskNotFound thrown = assertThrows(TaskNotFound.class, () -> taskService.findById(1));
+		TaskNotFoundException thrown = assertThrows(TaskNotFoundException.class, () -> taskService.findById(1));
 		assertEquals("Task with ID 1 not found!", thrown.getMessage());
 	}
 
@@ -163,7 +163,7 @@ class TaskServiceImplTest {
 		when(taskRepository.findById(1)).thenReturn(Optional.empty());
 
 		// Act & Assert
-		TaskNotFound thrown = assertThrows(TaskNotFound.class, () -> taskService.cancelTask(1));
+		TaskNotFoundException thrown = assertThrows(TaskNotFoundException.class, () -> taskService.cancelTask(1));
 		assertEquals("Task with ID 1 not found!", thrown.getMessage());
 	}
 
