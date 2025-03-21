@@ -2,7 +2,7 @@ package com.yms.auth_service.service;
 
 import com.yms.auth_service.dto.request.RegistrationRequest;
 import com.yms.auth_service.dto.response.PagedResponse;
-import com.yms.auth_service.dto.response.UserDto;
+import com.yms.auth_service.dto.response.UserResponse;
 import com.yms.auth_service.entity.Role;
 import com.yms.auth_service.entity.User;
 import com.yms.auth_service.exception.RoleNotFoundException;
@@ -12,11 +12,7 @@ import com.yms.auth_service.repository.RoleRepository;
 import com.yms.auth_service.repository.TokenRepository;
 import com.yms.auth_service.repository.UserRepository;
 import com.yms.auth_service.service.abstracts.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -25,7 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +33,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
 
     @Override
-    public UserDto getAuthenticatedUser() {
+    public UserResponse getAuthenticatedUser() {
         User user = getCurrentAuthenticatedUser();
         return userMapper.toDto(user);
     }
@@ -60,7 +55,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto findById(Integer id) {
+    public UserResponse findById(Integer id) {
         return userRepository.findById(id)
                 .map(userMapper::toDto)
                 .orElseThrow(() -> new UserNotFoundException("User with ID " + id + " not found!"));
@@ -103,7 +98,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> findByIds(List<Integer> ids) {
+    public List<UserResponse> findByIds(List<Integer> ids) {
         List<User> users = userRepository.findAllById(ids);
 
         if (users.isEmpty()) {
@@ -116,9 +111,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PagedResponse<UserDto> getAllActiveUsers(Pageable pageable) {
+    public PagedResponse<UserResponse> getAllActiveUsers(Pageable pageable) {
 
-        Page<UserDto> users = userRepository.findAllActives(pageable)
+        Page<UserResponse> users = userRepository.findAllActives(pageable)
                 .map(userMapper::toDto);
         return new PagedResponse<>(
                 users.getContent(),
