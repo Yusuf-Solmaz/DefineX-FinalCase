@@ -9,7 +9,6 @@ public record TaskResponse(
         String description,
         String priority,
         String status,
-        String reason,
-        boolean isDeleted
+        String reason
 ) {
 }
