@@ -1,5 +1,6 @@
 package com.yms.auth_service.service;
 
+import com.yms.auth_service.activation.AccountActivation;
 import com.yms.auth_service.dto.request.AuthenticationRequest;
 import com.yms.auth_service.dto.request.RegistrationRequest;
 import com.yms.auth_service.dto.response.AuthenticationResponse;
@@ -40,9 +41,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final RoleRepository roleRepository;
     private final EmailService emailService;
     private final TokenRepository tokenRepository;
-
-    @Value("${application.mailing.frontend.activation-url}")
-    private String activationUrl;
+    private final AccountActivation activation;
 
 
     @Override
@@ -60,7 +59,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .roles(List.of(userRole))
                 .build();
         userRepository.save(user);
-        sendValidationEmail(user);
+        activation.sendValidationEmail(user);
     }
 
     @Override
@@ -90,7 +89,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
         if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
-            sendValidationEmail(savedToken.getUser());
+            activation.sendValidationEmail(savedToken.getUser());
             throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
         }
 
@@ -103,47 +102,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         tokenRepository.save(savedToken);
     }
 
-
-
-    private String generateAndSaveActivationToken(User user) {
-
-        String generatedToken = generateActivationCode(6);
-        var token = Token.builder()
-                .token(generatedToken)
-                .createdAt(LocalDateTime.now())
-                .expiresAt(LocalDateTime.now().plusMinutes(15))
-                .user(user)
-                .build();
-        tokenRepository.save(token);
-
-        return generatedToken;
-    }
-
-    private void sendValidationEmail(User user) throws MessagingException {
-        var newToken = generateAndSaveActivationToken(user);
-
-        emailService.sendEmail(
-                user.getEmail(),
-                user.getFullName(),
-                EmailTemplateName.ACTIVATE_ACCOUNT,
-                activationUrl,
-                newToken,
-                "Account activation"
-        );
-    }
-
-    private String generateActivationCode(int length) {
-        String characters = "0123456789";
-        StringBuilder codeBuilder = new StringBuilder();
-
-        SecureRandom secureRandom = new SecureRandom();
-
-        for (int i = 0; i < length; i++) {
-            int randomIndex = secureRandom.nextInt(characters.length());
-            codeBuilder.append(characters.charAt(randomIndex));
-        }
-
-        return codeBuilder.toString();
-    }
 }
 
