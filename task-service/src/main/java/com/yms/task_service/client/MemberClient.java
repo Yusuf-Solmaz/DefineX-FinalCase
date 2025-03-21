@@ -1,7 +1,7 @@
 package com.yms.task_service.client;
 
 
-import com.yms.task_service.dto.UserResponse;
+import com.yms.task_service.dto.response.UserResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;

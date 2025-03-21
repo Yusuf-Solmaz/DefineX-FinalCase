@@ -1,7 +1,7 @@
 package com.yms.task_service.service.abstracts;
 
 
-import com.yms.task_service.dto.UserResponse;
+import com.yms.task_service.dto.response.UserResponse;
 
 import java.util.List;
 
