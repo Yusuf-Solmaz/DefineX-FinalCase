@@ -56,6 +56,9 @@ public class CommentServiceImpl implements CommentService {
         if (comment.getIsDeleted()) {
             throw new CommentNotFound("Cannot update a deleted comment.");
         }
+        if (comment.getContent() != null  && !comment.getContent().isEmpty()) {
+            throw new RuntimeException("Content cannot be empty");
+        }
 
         comment.setContent(updateRequest.content());
         Comment updatedComment = commentRepository.save(comment);
