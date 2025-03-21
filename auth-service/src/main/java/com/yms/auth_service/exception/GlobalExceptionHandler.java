@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static com.yms.auth_service.exception.exception_response.BusinessErrorCodes.*;
 import static com.yms.auth_service.exception.exception_response.BusinessErrorCodes.NOT_FOUND;
 import static org.springframework.http.HttpStatus.*;
@@ -32,19 +35,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ExceptionResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-
         ExceptionResponse exception = new ExceptionResponse();
 
+        Set<String> validationErrors = new HashSet<>();
+
         ex.getBindingResult().getAllErrors().forEach(error -> {
-
             String errorMessage = error.getDefaultMessage();
-
-            exception.setBusinessErrorCode(BAD_CREDENTIALS.getCode());
-            exception.setError(errorMessage);
-            exception.setBusinessErrorDescription("Bad Credentials");
-
+            validationErrors.add(errorMessage);
         });
 
+        exception.setBusinessErrorCode(BAD_CREDENTIALS.getCode());
+        exception.setBusinessErrorDescription("Bad Credentials");
+        exception.setValidationErrors(validationErrors);
 
         return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
     }
@@ -54,15 +56,17 @@ public class GlobalExceptionHandler {
 
         ExceptionResponse exception = new ExceptionResponse();
 
+
+        Set<String> validationErrors = new HashSet<>();
+
         ex.getConstraintViolations().forEach(violation -> {
-
             String errorMessage = violation.getMessage();
-
-            exception.setBusinessErrorCode(BAD_CREDENTIALS.getCode());
-            exception.setError(errorMessage);
-            exception.setBusinessErrorDescription("Bad Credentials");
-
+            validationErrors.add(errorMessage);
         });
+
+        exception.setBusinessErrorCode(BAD_CREDENTIALS.getCode());
+        exception.setBusinessErrorDescription("Bad Credentials");
+        exception.setValidationErrors(validationErrors);
 
         return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
     }
