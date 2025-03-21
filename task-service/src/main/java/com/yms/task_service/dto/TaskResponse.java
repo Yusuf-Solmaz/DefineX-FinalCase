@@ -3,7 +3,7 @@ package com.yms.task_service.dto;
 import lombok.Builder;
 
 @Builder
-public record TaskDto(
+public record TaskResponse(
         Integer id,
         String title,
         String description,

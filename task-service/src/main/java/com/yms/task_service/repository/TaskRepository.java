@@ -1,6 +1,5 @@
 package com.yms.task_service.repository;
 
-import com.yms.task_service.dto.TaskDto;
 import com.yms.task_service.entity.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -2,7 +2,7 @@ package com.yms.task_service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yms.task_service.controller.TaskController;
-import com.yms.task_service.dto.TaskDto;
+import com.yms.task_service.dto.TaskResponse;
 import com.yms.task_service.dto.UpdateTaskStatusRequest;
 import com.yms.task_service.dto.request.TaskRequest;
 import com.yms.task_service.entity.TaskStatus;
@@ -36,7 +36,7 @@ class TaskControllerTest {
     private ObjectMapper objectMapper;
 
     private TaskRequest taskRequest;
-    private TaskDto taskDto;
+    private TaskResponse taskResponse;
 
     @BeforeEach
     void setUp() {
@@ -57,7 +57,7 @@ class TaskControllerTest {
                 .reason("Initial task")
                 .build();
 
-        taskDto = TaskDto.builder()
+        taskResponse = TaskResponse.builder()
                 .id(1)
                 .title("Test Task")
                 .description("Test task description")
@@ -70,7 +70,7 @@ class TaskControllerTest {
 
     @Test
     void createTask_ShouldReturnCreated() throws Exception {
-        when(taskService.save(any(TaskRequest.class), anyString())).thenReturn(taskDto);
+        when(taskService.save(any(TaskRequest.class), anyString())).thenReturn(taskResponse);
 
         mockMvc.perform(post("/api/v1/tasks")
                         .contentType("application/json")
@@ -84,7 +84,7 @@ class TaskControllerTest {
 
     @Test
     void getTaskById_ShouldReturnTask() throws Exception {
-        when(taskService.findById(1)).thenReturn(taskDto);
+        when(taskService.findById(1)).thenReturn(taskResponse);
 
         mockMvc.perform(get("/api/v1/tasks/1"))
                 .andExpect(status().isOk())
@@ -94,8 +94,8 @@ class TaskControllerTest {
 
     @Test
     void getTasksByProjectId_ShouldReturnTasks() throws Exception {
-        List<TaskDto> taskDtos = Collections.singletonList(taskDto);
-        when(taskService.findAllByProjectId(1)).thenReturn(taskDtos);
+        List<TaskResponse> taskResponses = Collections.singletonList(taskResponse);
+        when(taskService.findAllByProjectId(1)).thenReturn(taskResponses);
 
         mockMvc.perform(get("/api/v1/tasks/project/1"))
                 .andExpect(status().isOk())
@@ -107,7 +107,7 @@ class TaskControllerTest {
     void updateTaskStatus_ShouldReturnUpdatedTask() throws Exception {
         UpdateTaskStatusRequest statusRequest = new UpdateTaskStatusRequest(TaskStatus.COMPLETED, "Completed successfully");
 
-        when(taskService.updateTaskStatus(1, TaskStatus.COMPLETED, "Completed successfully")).thenReturn(taskDto);
+        when(taskService.updateTaskStatus(1, TaskStatus.COMPLETED, "Completed successfully")).thenReturn(taskResponse);
 
         mockMvc.perform(patch("/api/v1/tasks/1/status")
                         .contentType("application/json")

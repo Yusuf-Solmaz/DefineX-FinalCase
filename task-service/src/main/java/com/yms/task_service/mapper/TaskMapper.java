@@ -1,16 +1,18 @@
 package com.yms.task_service.mapper;
 
-import com.yms.task_service.dto.TaskDto;
+import com.yms.task_service.dto.TaskResponse;
 import com.yms.task_service.dto.request.TaskRequest;
+import com.yms.task_service.dto.request.TaskUpdateRequest;
 import com.yms.task_service.entity.Task;
 import com.yms.task_service.entity.TaskPriority;
 import com.yms.task_service.entity.TaskStatus;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface TaskMapper {
 
-    TaskDto toTaskDto(Task task);
+    TaskResponse toTaskDto(Task task);
     Task toTask(TaskRequest taskRequest);
 
     default String mapTaskStatusToString(TaskStatus status) {
