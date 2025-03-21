@@ -11,6 +11,7 @@ public interface UserMapper {
 
     @Mapping(target = "fullName", expression = "java(user.getFullName())")
     @Mapping(target = "authorities", expression = "java(user.getRoles().stream().map(role -> role.getName()).collect(java.util.stream.Collectors.toList()))")
+    @Mapping(source = "deleted", target = "isDeleted")
     UserResponse toDto(User user);
 
 

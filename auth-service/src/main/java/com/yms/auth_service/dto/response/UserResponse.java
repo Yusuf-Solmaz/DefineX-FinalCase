@@ -8,6 +8,7 @@ public record UserResponse(
         String lastname,
         String email,
         List<String> authorities,
-        String fullName
+        String fullName,
+        boolean isDeleted
 ) {
 }
