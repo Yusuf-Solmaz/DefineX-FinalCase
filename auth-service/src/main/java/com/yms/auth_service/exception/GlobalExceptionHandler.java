@@ -1,6 +1,7 @@
 package com.yms.auth_service.exception;
 import com.yms.auth_service.exception.exception_response.ExceptionResponse;
 import jakarta.mail.MessagingException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -10,8 +11,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashSet;
-import java.util.Set;
 
 import static com.yms.auth_service.exception.exception_response.BusinessErrorCodes.*;
 import static com.yms.auth_service.exception.exception_response.BusinessErrorCodes.NOT_FOUND;
@@ -29,6 +28,43 @@ public class GlobalExceptionHandler {
                         .businessErrorDescription("User Not Found")
                         .error(e.getMessage())
                         .build());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ExceptionResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+
+        ExceptionResponse exception = new ExceptionResponse();
+
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+
+            String errorMessage = error.getDefaultMessage();
+
+            exception.setBusinessErrorCode(BAD_CREDENTIALS.getCode());
+            exception.setError(errorMessage);
+            exception.setBusinessErrorDescription("Bad Credentials");
+
+        });
+
+
+        return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ExceptionResponse> handleConstraintViolationExceptions(ConstraintViolationException ex) {
+
+        ExceptionResponse exception = new ExceptionResponse();
+
+        ex.getConstraintViolations().forEach(violation -> {
+
+            String errorMessage = violation.getMessage();
+
+            exception.setBusinessErrorCode(BAD_CREDENTIALS.getCode());
+            exception.setError(errorMessage);
+            exception.setBusinessErrorDescription("Bad Credentials");
+
+        });
+
+        return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(RoleNotFoundException.class)
@@ -115,24 +151,6 @@ public class GlobalExceptionHandler {
                 );
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException exp) {
-        Set<String> errors = new HashSet<>();
-        exp.getBindingResult().getAllErrors()
-                .forEach(error -> {
-                    //var fieldName = ((FieldError) error).getField();
-                    var errorMessage = error.getDefaultMessage();
-                    errors.add(errorMessage);
-                });
-
-        return ResponseEntity
-                .status(BAD_REQUEST)
-                .body(
-                        ExceptionResponse.builder()
-                                .validationErrors(errors)
-                                .build()
-                );
-    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionResponse> handleException(Exception exp) {
