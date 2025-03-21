@@ -37,7 +37,7 @@ public class CommentController {
         ).body(commentResponse);
     }
 
-    @GetMapping("{taskId}")
+    @GetMapping("/{taskId}")
     public ResponseEntity<PagedResponse<CommentResponse>> getAllComments(
             @PathVariable Integer taskId,
             @RequestParam(defaultValue = "0") int page,
@@ -45,6 +45,11 @@ public class CommentController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(commentService.getCommentsByTaskId(taskId, pageable));
+    }
+
+    @GetMapping("/id/{commentId}")
+    public ResponseEntity<CommentResponse> getCommentById(@PathVariable String commentId){
+        return ResponseEntity.ok(commentService.getCommentById(commentId));
     }
 
     @PutMapping("/{id}")
