@@ -26,6 +26,7 @@ server:
 application:
   config:
     projects-url: http://localhost:8222/api/v1/projects
+    members-url: http://localhost:8222/api/v1/users
 
 management:
   tracing:
