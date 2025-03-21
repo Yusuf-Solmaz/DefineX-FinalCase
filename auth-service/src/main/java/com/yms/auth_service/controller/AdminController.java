@@ -1,6 +1,7 @@
 package com.yms.auth_service.controller;
 
 import com.yms.auth_service.dto.request.RegistrationRequest;
+import com.yms.auth_service.dto.request.UserUpdateRequest;
 import com.yms.auth_service.service.AuthenticationServiceImpl;
 import com.yms.auth_service.service.abstracts.AuthenticationService;
 import com.yms.auth_service.service.abstracts.UserService;
@@ -38,5 +39,10 @@ public class AdminController {
         return ResponseEntity.ok("User roles updated successfully!");
     }
 
+    @PutMapping("/update/{userId}")
+    public ResponseEntity<String>  updateUser(@PathVariable Integer userId, @RequestBody @Valid UserUpdateRequest request) throws MessagingException {
+        userService.updateUser(userId, request);
+        return ResponseEntity.ok("User updated successfully!");
+    }
 
 }
