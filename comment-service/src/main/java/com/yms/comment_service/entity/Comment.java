@@ -31,7 +31,7 @@ public class Comment {
     @Size(min = 10, message = "Content must be at least 10 characters long.")
     private String content;
 
-    private Date createdAt = new Date();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     private boolean isDeleted = false;
 }
