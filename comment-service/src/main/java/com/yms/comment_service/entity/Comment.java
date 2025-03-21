@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Document(collection = "comments")
 @Data
@@ -30,6 +31,7 @@ public class Comment {
     @Size(min = 10, message = "Content must be at least 10 characters long.")
     private String content;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private Boolean isDeleted = false;
+    private Date createdAt = new Date();
+
+    private boolean isDeleted = false;
 }
