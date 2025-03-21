@@ -112,6 +112,7 @@ public class CommentServiceImplTest {
                 .userEmail("user@example.com")
                 .content(updateRequest.content())
                 .createdAt(existingComment.getCreatedAt())
+                .isDeleted(false)
                 .build();
     }
 
@@ -122,7 +123,7 @@ public class CommentServiceImplTest {
 
         when(commentRepository.findById("1")).thenReturn(Optional.of(existingComment));
         when(commentRepository.save(any(Comment.class))).thenReturn(updatedComment);
-        when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(updatedCommentResponse);
+        when(commentMapper.toCommentResponse(any(Comment.class))).thenReturn(updatedCommentResponse);
 
         CommentResponse result = commentService.updateComment("1", updateRequest);
 
@@ -145,7 +146,7 @@ public class CommentServiceImplTest {
         when(taskClient.findTaskById(anyInt(), anyString())).thenReturn(taskResponse);
         when(commentMapper.toComment(any(CommentCreateRequest.class), anyString())).thenReturn(comment);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
-        when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(commentResponse);
+        when(commentMapper.toCommentResponse(any(Comment.class))).thenReturn(commentResponse);
 
         CommentResponse result = commentService.addComment(commentCreateRequest, "user@example.com", "dummyToken");
 
@@ -160,7 +161,7 @@ public class CommentServiceImplTest {
         Page<Comment> commentPage = new PageImpl<>(List.of(comment));
         Pageable pageable = PageRequest.of(0, 10);
 
-        when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(commentResponse);
+        when(commentMapper.toCommentResponse(any(Comment.class))).thenReturn(commentResponse);
         when(commentRepository.findAllByTaskIdAndIsDeletedFalse(anyInt(), eq(pageable)))
                 .thenReturn(commentPage);
 
@@ -187,7 +188,7 @@ public class CommentServiceImplTest {
         when(commentRepository.save(any(Comment.class))).thenReturn(existingComment);
 
         commentService.deleteComment("1");
-        assertTrue(existingComment.getIsDeleted());
+        assertTrue(existingComment.isDeleted());
         verify(commentRepository).save(any(Comment.class));
     }
 
