@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 @Builder
 public record CommentResponse(
+        String id,
         Integer taskId,
         String userEmail,
         String content,
