@@ -4,7 +4,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record TaskRequest(
+public record TaskCreateRequest(
         String title,
         String description,
         Integer projectId,
