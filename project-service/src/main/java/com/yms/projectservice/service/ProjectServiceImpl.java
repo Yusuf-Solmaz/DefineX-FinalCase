@@ -1,9 +1,9 @@
 package com.yms.projectservice.service;
 
-import com.yms.projectservice.dto.PagedResponse;
-import com.yms.projectservice.dto.ProjectResponse;
-import com.yms.projectservice.dto.ProjectRequest;
-import com.yms.projectservice.dto.UserResponse;
+import com.yms.projectservice.dto.response.PagedResponse;
+import com.yms.projectservice.dto.response.ProjectResponse;
+import com.yms.projectservice.dto.request.ProjectCreateRequest;
+import com.yms.projectservice.dto.response.UserResponse;
 import com.yms.projectservice.entity.Project;
 import com.yms.projectservice.entity.ProjectStatus;
 import com.yms.projectservice.exception.NoMembersFoundException;
@@ -37,9 +37,9 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponse save(ProjectRequest projectRequest, String token) {
+    public ProjectResponse save(ProjectCreateRequest projectCreateRequest, String token) {
 
-        Project project = projectMapper.toProject(projectRequest);
+        Project project = projectMapper.toProject(projectCreateRequest);
 
         if (project.getStatus() == null) {
             project.setStatus(ProjectStatus.BACKLOG);

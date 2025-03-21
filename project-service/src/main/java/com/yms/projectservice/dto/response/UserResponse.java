@@ -1,4 +1,4 @@
-package com.yms.projectservice.dto;
+package com.yms.projectservice.dto.response;
 
 import lombok.Builder;
 import java.util.List;

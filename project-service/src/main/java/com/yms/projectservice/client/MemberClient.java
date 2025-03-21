@@ -1,7 +1,7 @@
 package com.yms.projectservice.client;
 
 //import com.yms.projectservice.client.config.FeignClientConfig;
-import com.yms.projectservice.dto.UserResponse;
+import com.yms.projectservice.dto.response.UserResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;

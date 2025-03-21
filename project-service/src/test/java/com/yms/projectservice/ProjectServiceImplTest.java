@@ -4,10 +4,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
-import com.yms.projectservice.dto.PagedResponse;
-import com.yms.projectservice.dto.ProjectResponse;
-import com.yms.projectservice.dto.ProjectRequest;
-import com.yms.projectservice.dto.UserResponse;
+
+import com.yms.projectservice.dto.request.ProjectCreateRequest;
+import com.yms.projectservice.dto.response.PagedResponse;
+import com.yms.projectservice.dto.response.ProjectResponse;
+import com.yms.projectservice.dto.response.UserResponse;
 import com.yms.projectservice.entity.Project;
 import com.yms.projectservice.exception.ProjectNotFound;
 import com.yms.projectservice.mapper.ProjectMapper;
@@ -44,14 +45,14 @@ public class ProjectServiceImplTest {
     @InjectMocks
     private ProjectServiceImpl projectService;
 
-    private ProjectRequest projectRequest;
+    private ProjectCreateRequest projectCreateRequest;
     private Project project;
     private ProjectResponse projectResponse;
     private List<UserResponse> userResponses;
 
     @BeforeEach
     void setUp() {
-        projectRequest = ProjectRequest.builder()
+        projectCreateRequest = ProjectCreateRequest.builder()
                 .title("Test Project")
                 .description("This is a test project.")
                 .teamMemberIds(List.of(1, 2))
@@ -107,12 +108,12 @@ public class ProjectServiceImplTest {
 
     @Test
     void testSave_ShouldSaveAndReturnProjectDto() {
-        when(projectMapper.toProject(any(ProjectRequest.class))).thenReturn(project);
+        when(projectMapper.toProject(any(ProjectCreateRequest.class))).thenReturn(project);
         when(projectRepository.save(any(Project.class))).thenReturn(project);
         when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectResponse);
         when(memberClient.findUsersByIds(any(), any())).thenReturn(userResponses);
 
-        ProjectResponse result = projectService.save(projectRequest, "dummyToken");
+        ProjectResponse result = projectService.save(projectCreateRequest, "dummyToken");
 
         assertNotNull(result);
         assertEquals(projectResponse.title(), result.title());

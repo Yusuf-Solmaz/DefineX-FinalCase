@@ -1,6 +1,6 @@
 package com.yms.projectservice.service.abstracts;
 
-import com.yms.projectservice.dto.UserResponse;
+import com.yms.projectservice.dto.response.UserResponse;
 
 import java.util.List;
 

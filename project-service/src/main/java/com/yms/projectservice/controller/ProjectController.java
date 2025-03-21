@@ -1,9 +1,9 @@
 package com.yms.projectservice.controller;
 
-import com.yms.projectservice.dto.PagedResponse;
-import com.yms.projectservice.dto.ProjectRequest;
-import com.yms.projectservice.dto.UserResponse;
-import com.yms.projectservice.dto.ProjectResponse;
+import com.yms.projectservice.dto.response.PagedResponse;
+import com.yms.projectservice.dto.request.ProjectCreateRequest;
+import com.yms.projectservice.dto.response.UserResponse;
+import com.yms.projectservice.dto.response.ProjectResponse;
 import com.yms.projectservice.service.abstracts.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -54,10 +54,10 @@ public class ProjectController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ProjectResponse> createProject(
-            @RequestBody @Valid ProjectRequest projectRequest,
+            @RequestBody @Valid ProjectCreateRequest projectCreateRequest,
             @RequestHeader("Authorization") String token) {
 
-        ProjectResponse savedProject = projectService.save(projectRequest, token);
+        ProjectResponse savedProject = projectService.save(projectCreateRequest, token);
 
         return ResponseEntity.created(
                 URI.create("/api/v1/projects/" + savedProject.id())

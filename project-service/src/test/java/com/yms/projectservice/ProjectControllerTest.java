@@ -1,10 +1,10 @@
 package com.yms.projectservice;
 
 import com.yms.projectservice.controller.ProjectController;
-import com.yms.projectservice.dto.PagedResponse;
-import com.yms.projectservice.dto.ProjectRequest;
-import com.yms.projectservice.dto.ProjectResponse;
-import com.yms.projectservice.dto.UserResponse;
+import com.yms.projectservice.dto.request.ProjectCreateRequest;
+import com.yms.projectservice.dto.response.PagedResponse;
+import com.yms.projectservice.dto.response.ProjectResponse;
+import com.yms.projectservice.dto.response.UserResponse;
 import com.yms.projectservice.exception.GlobalExceptionHandler;
 import com.yms.projectservice.service.abstracts.ProjectService;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,7 +101,7 @@ public class ProjectControllerTest {
     @Test
     void createProject_ShouldReturnCreated() throws Exception {
         String token = "Bearer token";
-        when(projectService.save(ArgumentMatchers.any(ProjectRequest.class), ArgumentMatchers.anyString()))
+        when(projectService.save(ArgumentMatchers.any(ProjectCreateRequest.class), ArgumentMatchers.anyString()))
                 .thenReturn(projectResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/projects")

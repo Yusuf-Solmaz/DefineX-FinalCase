@@ -1,7 +1,7 @@
 package com.yms.projectservice.service;
 
 import com.yms.projectservice.client.MemberClient;
-import com.yms.projectservice.dto.UserResponse;
+import com.yms.projectservice.dto.response.UserResponse;
 import com.yms.projectservice.exception.NoMembersFoundException;
 import com.yms.projectservice.service.abstracts.MemberClientService;
 import lombok.RequiredArgsConstructor;

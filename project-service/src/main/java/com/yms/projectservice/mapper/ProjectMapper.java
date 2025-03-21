@@ -1,7 +1,7 @@
 package com.yms.projectservice.mapper;
 
-import com.yms.projectservice.dto.ProjectResponse;
-import com.yms.projectservice.dto.ProjectRequest;
+import com.yms.projectservice.dto.request.ProjectCreateRequest;
+import com.yms.projectservice.dto.response.ProjectResponse;
 import com.yms.projectservice.entity.Project;
 import com.yms.projectservice.entity.ProjectStatus;
 import org.mapstruct.Mapper;
@@ -19,7 +19,7 @@ public interface ProjectMapper {
     Project toProject(ProjectResponse projectResponse);
 
     @Mapping(source = "projectStatus", target = "status")
-    Project toProject(ProjectRequest projectRequest);
+    Project toProject(ProjectCreateRequest projectCreateRequest);
 
     default String mapProjectStatusToString(ProjectStatus status) {
         return status != null ? status.getProjectStatus() : null;
