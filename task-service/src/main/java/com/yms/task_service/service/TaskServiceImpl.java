@@ -1,16 +1,15 @@
 package com.yms.task_service.service;
 
-import com.yms.task_service.dto.ProjectResponse;
-import com.yms.task_service.dto.TaskResponse;
-import com.yms.task_service.dto.UserResponse;
-import com.yms.task_service.dto.request.TaskRequest;
+import com.yms.task_service.dto.response.ProjectResponse;
+import com.yms.task_service.dto.response.TaskResponse;
+import com.yms.task_service.dto.response.UserResponse;
+import com.yms.task_service.dto.request.TaskCreateRequest;
 import com.yms.task_service.dto.request.TaskUpdateRequest;
 import com.yms.task_service.entity.Task;
 import com.yms.task_service.entity.TaskPriority;
 import com.yms.task_service.entity.TaskStatus;
-import com.yms.task_service.exception.NoMembersFoundException;
-import com.yms.task_service.exception.ProjectNotFound;
-import com.yms.task_service.exception.TaskNotFound;
+import com.yms.task_service.exception.*;
+import com.yms.task_service.exception.exception_response.ErrorMessages;
 import com.yms.task_service.mapper.TaskMapper;
 import com.yms.task_service.repository.TaskRepository;
 import com.yms.task_service.service.abstracts.MemberClientService;
@@ -19,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.yms.task_service.exception.exception_response.ErrorMessages.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,17 +32,17 @@ public class TaskServiceImpl implements TaskService {
 
 
     @Override
-    public TaskResponse save(TaskRequest taskRequest, String token) {
-        Task task = taskMapper.toTask(taskRequest);
+    public TaskResponse save(TaskCreateRequest taskCreateRequest, String token) {
+        Task task = taskMapper.toTask(taskCreateRequest);
 
         if (task.getReason() == null || task.getReason().isEmpty()) {
-            task.setReason("No reason provided.");
+            task.setReason(TASK_REASON_NOT_PROVIDED);
         }
 
         ProjectResponse projectResponse = projectServiceClient.getProjectById(task.getProjectId(), token);
 
         if (projectResponse.isDeleted()){
-            throw new ProjectNotFound("Project was deleted.");
+            throw new ProjectNotFoundException(PROJECT_DELETED);
         }
 
         List<Integer> projectMemberIds = projectServiceClient.getProjectMemberIds(task.getProjectId(), token);
@@ -52,10 +53,10 @@ public class TaskServiceImpl implements TaskService {
                 .toList();
 
         if (!invalidAssignees.isEmpty()) {
-            throw new IllegalArgumentException("The following assignees are not part of the project team: " + invalidAssignees);
+            throw new IllegalArgumentException(String.format(INVALID_ASSIGNEE, invalidAssignees));
         }
 
-        return taskMapper.toTaskDto(
+        return taskMapper.toTaskResponse(
                 taskRepository.save(task)
         );
     }
@@ -63,15 +64,15 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskResponse findById(Integer id) {
         return taskRepository.findById(id)
-                .map(taskMapper::toTaskDto)
-                .orElseThrow(() -> new TaskNotFound("Task with ID " + id + " not found!"));
+                .map(taskMapper::toTaskResponse)
+                .orElseThrow(() -> new TaskNotFoundException(String.format(TASK_NOT_FOUND, id)));
     }
 
     @Override
     public TaskResponse findByIdAndNotCancelled(Integer projectId) {
         return taskRepository.findByIdAndNotCancelled(projectId)
-                .map(taskMapper::toTaskDto)
-                .orElseThrow(() -> new TaskNotFound("No Task Found with Project ID: " + projectId ));
+                .map(taskMapper::toTaskResponse)
+                .orElseThrow(() -> new TaskNotFoundException(String.format(TASK_NOT_FOUND, projectId) ));
     }
 
     @Override
@@ -79,18 +80,18 @@ public class TaskServiceImpl implements TaskService {
         List<Task> tasks = taskRepository.findAllByProjectId(projectId);
 
         if (tasks.isEmpty()) {
-            throw new ProjectNotFound("Project with ID " + projectId + " has no tasks.");
+            throw new ProjectNotFoundException(String.format(PROJECT_TASKS_NOT_FOUND, projectId));
         }
 
         return tasks.stream()
-                .map(taskMapper::toTaskDto)
+                .map(taskMapper::toTaskResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public void cancelTask(Integer id) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new TaskNotFound("Task with ID " + id + " not found!"));
+                .orElseThrow(() -> new TaskNotFoundException(String.format(TASK_NOT_FOUND, id)));
 
         task.setStatus(TaskStatus.CANCELLED);
         task.setReason("Deleted.");
@@ -101,14 +102,14 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskResponse updateTaskStatus(Integer taskId, TaskStatus newStatus, String reason) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFound("Task not found"));
+                .orElseThrow(() -> new TaskNotFoundException(String.format(TASK_NOT_FOUND, taskId)));
 
         if (task.getStatus() == TaskStatus.COMPLETED) {
-            throw new RuntimeException("Completed tasks cannot be updated.");
+            throw new RuntimeException(UPDATE_TASK_COMPLETED);
         }
 
         if ((newStatus == TaskStatus.CANCELLED || newStatus == TaskStatus.BLOCKED) && (reason == null || reason.isEmpty())) {
-            throw new RuntimeException("A reason must be provided for CANCELLED or BLOCKED status.");
+            throw new RuntimeException(TASK_CANCELLED_REASON_REQUIRED);
         }
 
         validateStateTransition(task.getStatus(), newStatus);
@@ -116,7 +117,7 @@ public class TaskServiceImpl implements TaskService {
         task.setStatus(newStatus);
         taskRepository.save(task);
 
-        return taskMapper.toTaskDto(task);
+        return taskMapper.toTaskResponse(task);
     }
 
     @Override
@@ -129,22 +130,20 @@ public class TaskServiceImpl implements TaskService {
 
 
         if (memberIds.isEmpty()) {
-            throw new NoMembersFoundException("No members found in the project.");
+            throw new NoMembersFoundException(NO_MEMBERS_FOUND);
         }
-
-        System.out.println("Token: " + token);
 
         return clientService.findUsersByIds(memberIds, token);
     }
 
     public TaskResponse updateTask(Integer taskId, TaskUpdateRequest request,String token) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFound("Task with ID " + taskId + " not found!"));
+                .orElseThrow(() -> new TaskNotFoundException(String.format(TASK_NOT_FOUND, taskId)));
 
         mergeTaskDetails(task, request,token);
 
         taskRepository.save(task);
-        return taskMapper.toTaskDto(task);
+        return taskMapper.toTaskResponse(task);
     }
 
     private void mergeTaskDetails(Task task, TaskUpdateRequest request, String token) {
@@ -161,7 +160,7 @@ public class TaskServiceImpl implements TaskService {
             if (newPriority != null) {
                 task.setPriority(newPriority);
             } else {
-                throw new IllegalArgumentException("Invalid priority value: " + request.priority());
+                throw new InvalidPriorityException(String.format(INVALID_PRIORITY,request.priority()));
             }
         }
 
@@ -173,7 +172,7 @@ public class TaskServiceImpl implements TaskService {
                     .toList();
 
             if (!invalidAssignees.isEmpty()) {
-                throw new IllegalArgumentException("The following assignees are not part of the project team: " + invalidAssignees);
+                throw new InvalidAssigneesException(INVALID_ASSIGNEES + invalidAssignees);
             }
 
             task.setAssigneeId(request.assigneeId());
@@ -187,7 +186,7 @@ public class TaskServiceImpl implements TaskService {
 
     private void validateStateTransition(TaskStatus currentStatus, TaskStatus newStatus) {
         if (newStatus == TaskStatus.BLOCKED && currentStatus != TaskStatus.IN_ANALYSIS && currentStatus != TaskStatus.IN_PROGRESS) {
-            throw new RuntimeException("Tasks can only be blocked if they are in IN_ANALYSIS or IN_PROGRESS.");
+            throw new RuntimeException(ErrorMessages.TASK_BLOCKED_INVALID_STATE);
         }
 
         List<TaskStatus> allowedTransitions = switch (currentStatus) {
@@ -196,11 +195,11 @@ public class TaskServiceImpl implements TaskService {
             case IN_PROGRESS -> List.of(TaskStatus.COMPLETED, TaskStatus.BLOCKED, TaskStatus.CANCELLED);
             case BLOCKED -> List.of(TaskStatus.IN_ANALYSIS, TaskStatus.IN_PROGRESS);
             case CANCELLED -> List.of();
-            case COMPLETED -> throw new RuntimeException("Cannot change status of a completed task.");
+            case COMPLETED -> throw new RuntimeException(ErrorMessages.CHANGE_TASK_COMPLETED);
         };
 
         if (!allowedTransitions.contains(newStatus)) {
-            throw new RuntimeException("Invalid state transition from " + currentStatus + " to " + newStatus);
+            throw new RuntimeException(String.format(TASK_STATUS_TRANSITION_INVALID,currentStatus,newStatus));
         }
     }
 

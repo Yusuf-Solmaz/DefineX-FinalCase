@@ -7,8 +7,8 @@ import com.yms.projectservice.dto.request.ProjectCreateRequest;
 import com.yms.projectservice.dto.response.UserResponse;
 import com.yms.projectservice.entity.Project;
 import com.yms.projectservice.entity.ProjectStatus;
-import com.yms.projectservice.exception.NoMembersFoundException;
-import com.yms.projectservice.exception.ProjectNotFound;
+import com.yms.projectservice.exception.*;
+import com.yms.projectservice.exception.exception_response.ErrorMessages;
 import com.yms.projectservice.mapper.ProjectMapper;
 import com.yms.projectservice.repository.ProjectRepository;
 import com.yms.projectservice.service.abstracts.MemberClientService;
@@ -17,9 +17,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static com.yms.projectservice.exception.exception_response.ErrorMessages.PROJECT_STATUS_TRANSITION_INVALID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,8 +34,8 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponse findById(Integer id) {
 
         return projectRepository.findById(id)
-                .map(projectMapper::toProjectDto)
-                .orElseThrow(() -> new ProjectNotFound("Project with ID " + id + " not found!"));
+                .map(projectMapper::toProjectResponse)
+                .orElseThrow(() -> new ProjectNotFoundException(String.format(ErrorMessages.PROJECT_NOT_FOUND,id)));
 
     }
 
@@ -49,13 +50,13 @@ public class ProjectServiceImpl implements ProjectService {
 
         validateTeamMembers(project.getTeamMemberIds(), token);
 
-        return projectMapper.toProjectDto(projectRepository.save(project));
+        return projectMapper.toProjectResponse(projectRepository.save(project));
     }
 
     @Override
     public void deleteById(Integer id) {
         Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new ProjectNotFound("Project not found!"));
+                .orElseThrow(() -> new ProjectNotFoundException(String.format(ErrorMessages.PROJECT_NOT_FOUND,id)));
         project.setDeleted(true);
         projectRepository.save(project);
     }
@@ -63,7 +64,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public PagedResponse<ProjectResponse> findAll(Pageable pageable) {
         Page<ProjectResponse> projects = projectRepository.findAll(pageable)
-                .map(projectMapper::toProjectDto);
+                .map(projectMapper::toProjectResponse);
 
 
         return new PagedResponse<>(
@@ -80,7 +81,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public PagedResponse<ProjectResponse> getAllActiveProjects(Pageable pageable) {
         Page<ProjectResponse> projects = projectRepository.findAllActives(pageable)
-                .map(projectMapper::toProjectDto);
+                .map(projectMapper::toProjectResponse);
 
         return new PagedResponse<>(
                 projects.getContent(),
@@ -94,18 +95,18 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<UserResponse> getAllMembers(Integer projectId, String token) {
-        List<Integer> memberIds = projectRepository.findById(projectId)
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(String.format(ErrorMessages.PROJECT_NOT_FOUND,projectId)));
+
+        List<Integer> memberIds = project.getTeamMemberIds()
                 .stream()
-                .flatMap(project -> project.getTeamMemberIds().stream())
                 .distinct()
                 .toList();
 
-
         if (memberIds.isEmpty()) {
-            throw new NoMembersFoundException("No members found in the project.");
+            throw new NoMembersFoundException(ErrorMessages.NO_MEMBERS_FOUND);
         }
-
-        System.out.println("Token: " + token);
 
         return memberClient.findUsersByIds(memberIds, token);
     }
@@ -120,10 +121,10 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectResponse> findByDepartmentName(String name) {
         List<ProjectResponse> projects = projectRepository.findAllByDepartmentName(name)
                 .stream()
-                .map(projectMapper::toProjectDto)
+                .map(projectMapper::toProjectResponse)
                 .toList();
         if (projects.isEmpty()) {
-            throw new ProjectNotFound("Project with name " + name + " not found!");
+            throw new ProjectNotFoundException(ErrorMessages.PROJECT_NOT_FOUND);
         }
         return projects;
     }
@@ -132,12 +133,12 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectResponse updateProject(Integer id, ProjectUpdateRequest updateRequest, String token) {
         Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new ProjectNotFound("Project with ID " + id + " not found!"));
+                .orElseThrow(() -> new ProjectNotFoundException(String.format(ErrorMessages.PROJECT_NOT_FOUND,id)));
 
         mergeProjectDetails(project, updateRequest, token);
 
         projectRepository.save(project);
-        return projectMapper.toProjectDto(project);
+        return projectMapper.toProjectResponse(project);
     }
 
     private void mergeProjectDetails(Project project, ProjectUpdateRequest updateRequest, String token) {
@@ -164,7 +165,7 @@ public class ProjectServiceImpl implements ProjectService {
                 validateStateTransition(project.getStatus(), newStatus);
                 project.setStatus(newStatus);
             } else {
-                throw new IllegalArgumentException("Invalid project status value: " + updateRequest.projectStatus());
+                throw new InvalidProjectStatusException(String.format(ErrorMessages.INVALID_PROJECT_STATUS, updateRequest.projectStatus()));
             }
         }
     }
@@ -185,13 +186,13 @@ public class ProjectServiceImpl implements ProjectService {
                 .toList();
 
         if (!invalidIds.isEmpty()) {
-            throw new NoMembersFoundException("Invalid team member IDs: " + invalidIds);
+            throw new InvalidTeamMemberException(ErrorMessages.INVALID_TEAM_MEMBER + invalidIds);
         }
     }
 
     private void validateStateTransition(ProjectStatus currentStatus, ProjectStatus newStatus) {
         if (newStatus == ProjectStatus.BLOCKED && currentStatus != ProjectStatus.IN_ANALYSIS && currentStatus != ProjectStatus.IN_PROGRESS) {
-            throw new RuntimeException("Tasks can only be blocked if they are in IN_ANALYSIS or IN_PROGRESS.");
+            throw new InvalidProjectStatusException(String.format(PROJECT_STATUS_TRANSITION_INVALID,"IN_ANALYSIS","IN_PROGRESS"));
         }
 
         List<ProjectStatus> allowedTransitions = switch (currentStatus) {
@@ -200,11 +201,11 @@ public class ProjectServiceImpl implements ProjectService {
             case IN_PROGRESS -> List.of(ProjectStatus.COMPLETED, ProjectStatus.BLOCKED, ProjectStatus.CANCELLED);
             case BLOCKED -> List.of(ProjectStatus.IN_ANALYSIS, ProjectStatus.IN_PROGRESS);
             case CANCELLED -> List.of();
-            case COMPLETED -> throw new RuntimeException("Cannot change status of a completed task.");
+            case COMPLETED -> throw new RuntimeException(ErrorMessages.CHANGE_TASK_COMPLETED);
         };
 
         if (!allowedTransitions.contains(newStatus)) {
-            throw new RuntimeException("Invalid state transition from " + currentStatus + " to " + newStatus);
+            throw new InvalidProjectStatusTransictionException(String.format(PROJECT_STATUS_TRANSITION_INVALID,currentStatus,newStatus));
         }
     }
 
