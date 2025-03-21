@@ -1,9 +1,9 @@
 package com.yms.task_service.controller;
 
-import com.yms.task_service.dto.TaskResponse;
-import com.yms.task_service.dto.UpdateTaskStatusRequest;
-import com.yms.task_service.dto.UserResponse;
-import com.yms.task_service.dto.request.TaskRequest;
+import com.yms.task_service.dto.request.TaskCreateRequest;
+import com.yms.task_service.dto.response.TaskResponse;
+import com.yms.task_service.dto.request.TaskStatusUpdateRequest;
+import com.yms.task_service.dto.response.UserResponse;
 import com.yms.task_service.dto.request.TaskUpdateRequest;
 import com.yms.task_service.service.abstracts.TaskService;
 import jakarta.validation.Valid;
@@ -25,9 +25,9 @@ public class TaskController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<TaskResponse> createTask(
-            @RequestBody @Valid TaskRequest taskRequest,
+            @RequestBody @Valid TaskCreateRequest taskCreateRequest,
             @RequestHeader("Authorization") String token) {
-        TaskResponse savedTask = taskService.save(taskRequest, token);
+        TaskResponse savedTask = taskService.save(taskCreateRequest, token);
         return ResponseEntity.created(
                 URI.create("/api/v1/tasks" + "/" + savedTask.id())
         ).body(savedTask);
@@ -36,10 +36,19 @@ public class TaskController {
     @PutMapping("/{taskId}")
     public ResponseEntity<TaskResponse> updateTask(
             @PathVariable Integer taskId,
-            @RequestBody TaskUpdateRequest request,
+            @RequestBody @Valid TaskUpdateRequest request,
             @RequestHeader("Authorization") String token) {
 
         TaskResponse updatedTask = taskService.updateTask(taskId, request,token);
+        return ResponseEntity.ok(updatedTask);
+    }
+
+    @PatchMapping("/{taskId}/status")
+    public ResponseEntity<TaskResponse> updateTaskStatus(
+            @PathVariable Integer taskId,
+            @RequestBody @Valid TaskStatusUpdateRequest request) {
+
+        TaskResponse updatedTask = taskService.updateTaskStatus(taskId, request.status(), request.reason());
         return ResponseEntity.ok(updatedTask);
     }
 
@@ -47,6 +56,11 @@ public class TaskController {
     public ResponseEntity<TaskResponse> getTaskById(@PathVariable Integer id) {
         TaskResponse task = taskService.findById(id);
         return ResponseEntity.ok(task);
+    }
+
+    @GetMapping("/members/{id}")
+    public ResponseEntity<List<UserResponse>> getProjectMember(@PathVariable Integer id, @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(taskService.getAllMembers(id,token));
     }
 
     @GetMapping("/actives/{projectId}")
@@ -62,24 +76,11 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
-
-    @PatchMapping("/{taskId}/status")
-    public ResponseEntity<TaskResponse> updateTaskStatus(
-            @PathVariable Integer taskId,
-            @RequestBody UpdateTaskStatusRequest request) {
-
-        TaskResponse updatedTask = taskService.updateTaskStatus(taskId, request.status(), request.reason());
-        return ResponseEntity.ok(updatedTask);
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelTask(@PathVariable Integer id) {
         taskService.cancelTask(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/members/{id}")
-    public ResponseEntity<List<UserResponse>> getProjectMember(@PathVariable Integer id, @RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(taskService.getAllMembers(id,token));
-    }
+
 }
