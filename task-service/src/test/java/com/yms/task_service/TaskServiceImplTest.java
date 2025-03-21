@@ -1,7 +1,7 @@
 package com.yms.task_service;
 
 import com.yms.task_service.dto.ProjectResponse;
-import com.yms.task_service.dto.TaskDto;
+import com.yms.task_service.dto.TaskResponse;
 import com.yms.task_service.dto.request.TaskRequest;
 import com.yms.task_service.entity.Task;
 import com.yms.task_service.entity.TaskPriority;
@@ -67,7 +67,7 @@ class TaskServiceImplTest {
 				.reason("Initial Task")
 				.build();
 
-		TaskDto taskDto = TaskDto.builder()
+		TaskResponse taskResponse = TaskResponse.builder()
 				.id(1)
 				.title("Task Title")
 				.description("Task Description")
@@ -78,16 +78,16 @@ class TaskServiceImplTest {
 
 		when(taskMapper.toTask(validTaskRequest)).thenReturn(task);
 		when(taskRepository.save(task)).thenReturn(task);
-		when(taskMapper.toTaskDto(task)).thenReturn(taskDto);
-		when(projectServiceClient.getProjectById(anyInt(), anyString())).thenReturn(new ProjectResponse(1L, "Project", "Description", "Development", "Active"));
+		when(taskMapper.toTaskDto(task)).thenReturn(taskResponse);
+		when(projectServiceClient.getProjectById(anyInt(), anyString())).thenReturn(new ProjectResponse(1L, "Project", "Description", "Development", "Active",false));
 		when(projectServiceClient.getProjectMemberIds(anyInt(), anyString())).thenReturn(Arrays.asList(1, 2));
 
 		// Act
-		TaskDto savedTask = taskService.save(validTaskRequest, "valid-token");
+		TaskResponse savedTask = taskService.save(validTaskRequest, "valid-token");
 
 		// Assert
 		assertNotNull(savedTask);
-		assertEquals(savedTask.id(), taskDto.id());
+		assertEquals(savedTask.id(), taskResponse.id());
 		verify(taskRepository, times(1)).save(task);
 	}
 
@@ -106,7 +106,7 @@ class TaskServiceImplTest {
 				.reason("Initial Task")
 				.build();
 
-		TaskDto taskDto = TaskDto.builder()
+		TaskResponse taskResponse = TaskResponse.builder()
 				.id(1)
 				.title("Task Title")
 				.description("Task Description")
@@ -116,14 +116,14 @@ class TaskServiceImplTest {
 				.build();
 
 		when(taskRepository.findById(1)).thenReturn(Optional.of(task));
-		when(taskMapper.toTaskDto(task)).thenReturn(taskDto);
+		when(taskMapper.toTaskDto(task)).thenReturn(taskResponse);
 
 		// Act
-		TaskDto foundTask = taskService.findById(1);
+		TaskResponse foundTask = taskService.findById(1);
 
 		// Assert
 		assertNotNull(foundTask);
-		assertEquals(foundTask.id(), taskDto.id());
+		assertEquals(foundTask.id(), taskResponse.id());
 	}
 
 	@Test

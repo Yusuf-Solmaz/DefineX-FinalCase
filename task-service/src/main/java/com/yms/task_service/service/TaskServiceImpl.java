@@ -1,13 +1,19 @@
 package com.yms.task_service.service;
 
-import com.yms.task_service.dto.TaskDto;
+import com.yms.task_service.dto.ProjectResponse;
+import com.yms.task_service.dto.TaskResponse;
+import com.yms.task_service.dto.UserResponse;
 import com.yms.task_service.dto.request.TaskRequest;
+import com.yms.task_service.dto.request.TaskUpdateRequest;
 import com.yms.task_service.entity.Task;
+import com.yms.task_service.entity.TaskPriority;
 import com.yms.task_service.entity.TaskStatus;
+import com.yms.task_service.exception.NoMembersFoundException;
 import com.yms.task_service.exception.ProjectNotFound;
 import com.yms.task_service.exception.TaskNotFound;
 import com.yms.task_service.mapper.TaskMapper;
 import com.yms.task_service.repository.TaskRepository;
+import com.yms.task_service.service.abstracts.MemberClientService;
 import com.yms.task_service.service.abstracts.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,17 +27,22 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
     private final ProjectServiceClient projectServiceClient;
+    private final MemberClientService clientService;
 
 
     @Override
-    public TaskDto save(TaskRequest taskRequest, String token) {
+    public TaskResponse save(TaskRequest taskRequest, String token) {
         Task task = taskMapper.toTask(taskRequest);
 
         if (task.getReason() == null || task.getReason().isEmpty()) {
             task.setReason("No reason provided.");
         }
 
-        projectServiceClient.getProjectById(task.getProjectId(), token);
+        ProjectResponse projectResponse = projectServiceClient.getProjectById(task.getProjectId(), token);
+
+        if (projectResponse.isDeleted()){
+            throw new ProjectNotFound("Project was deleted.");
+        }
 
         List<Integer> projectMemberIds = projectServiceClient.getProjectMemberIds(task.getProjectId(), token);
 
@@ -50,21 +61,21 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public TaskDto findById(Integer id) {
+    public TaskResponse findById(Integer id) {
         return taskRepository.findById(id)
                 .map(taskMapper::toTaskDto)
                 .orElseThrow(() -> new TaskNotFound("Task with ID " + id + " not found!"));
     }
 
     @Override
-    public TaskDto findByIdAndNotCancelled(Integer projectId) {
+    public TaskResponse findByIdAndNotCancelled(Integer projectId) {
         return taskRepository.findByIdAndNotCancelled(projectId)
                 .map(taskMapper::toTaskDto)
                 .orElseThrow(() -> new TaskNotFound("No Task Found with Project ID: " + projectId ));
     }
 
     @Override
-    public List<TaskDto> findAllByProjectId(Integer projectId) {
+    public List<TaskResponse> findAllByProjectId(Integer projectId) {
         List<Task> tasks = taskRepository.findAllByProjectId(projectId);
 
         if (tasks.isEmpty()) {
@@ -88,7 +99,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public TaskDto updateTaskStatus(Integer taskId, TaskStatus newStatus, String reason) {
+    public TaskResponse updateTaskStatus(Integer taskId, TaskStatus newStatus, String reason) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFound("Task not found"));
 
@@ -108,6 +119,72 @@ public class TaskServiceImpl implements TaskService {
         return taskMapper.toTaskDto(task);
     }
 
+    @Override
+    public List<UserResponse> getAllMembers(Integer taskId, String token) {
+        List<Integer> memberIds = taskRepository.findById(taskId)
+                .stream()
+                .flatMap(task -> task.getAssigneeId().stream())
+                .distinct()
+                .toList();
+
+
+        if (memberIds.isEmpty()) {
+            throw new NoMembersFoundException("No members found in the project.");
+        }
+
+        System.out.println("Token: " + token);
+
+        return clientService.findUsersByIds(memberIds, token);
+    }
+
+    public TaskResponse updateTask(Integer taskId, TaskUpdateRequest request,String token) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFound("Task with ID " + taskId + " not found!"));
+
+        mergeTaskDetails(task, request,token);
+
+        taskRepository.save(task);
+        return taskMapper.toTaskDto(task);
+    }
+
+    private void mergeTaskDetails(Task task, TaskUpdateRequest request, String token) {
+        if (request.title() != null && !request.title().isEmpty()) {
+            task.setTitle(request.title());
+        }
+
+        if (request.description() != null && !request.description().isEmpty()) {
+            task.setDescription(request.description());
+        }
+
+        if (request.priority() != null) {
+            TaskPriority newPriority = taskMapper.mapStringToTaskPriority(request.priority());
+            if (newPriority != null) {
+                task.setPriority(newPriority);
+            } else {
+                throw new IllegalArgumentException("Invalid priority value: " + request.priority());
+            }
+        }
+
+        if (request.assigneeId() != null && !request.assigneeId().isEmpty()) {
+            List<Integer> projectMemberIds = projectServiceClient.getProjectMemberIds(task.getProjectId(), token);
+            List<Integer> invalidAssignees = request.assigneeId()
+                    .stream()
+                    .filter(id -> !projectMemberIds.contains(id))
+                    .toList();
+
+            if (!invalidAssignees.isEmpty()) {
+                throw new IllegalArgumentException("The following assignees are not part of the project team: " + invalidAssignees);
+            }
+
+            task.setAssigneeId(request.assigneeId());
+        }
+
+        if (request.reason() != null && !request.reason().isEmpty()) {
+            task.setReason(request.reason());
+        }
+    }
+
+
     private void validateStateTransition(TaskStatus currentStatus, TaskStatus newStatus) {
         if (currentStatus == TaskStatus.COMPLETED) {
             throw new RuntimeException("Cannot change status of a completed task.");
@@ -122,7 +199,7 @@ public class TaskServiceImpl implements TaskService {
             case IN_ANALYSIS -> List.of(TaskStatus.IN_PROGRESS, TaskStatus.BLOCKED, TaskStatus.CANCELLED);
             case IN_PROGRESS -> List.of(TaskStatus.COMPLETED, TaskStatus.BLOCKED, TaskStatus.CANCELLED);
             case BLOCKED -> List.of(TaskStatus.IN_ANALYSIS, TaskStatus.IN_PROGRESS);
-            case CANCELLED, COMPLETED -> List.of(); // Geçiş yapılamaz
+            case CANCELLED, COMPLETED -> List.of();
         };
 
         if (!allowedTransitions.contains(newStatus)) {
