@@ -186,10 +186,6 @@ public class TaskServiceImpl implements TaskService {
 
 
     private void validateStateTransition(TaskStatus currentStatus, TaskStatus newStatus) {
-        if (currentStatus == TaskStatus.COMPLETED) {
-            throw new RuntimeException("Cannot change status of a completed task.");
-        }
-
         if (newStatus == TaskStatus.BLOCKED && currentStatus != TaskStatus.IN_ANALYSIS && currentStatus != TaskStatus.IN_PROGRESS) {
             throw new RuntimeException("Tasks can only be blocked if they are in IN_ANALYSIS or IN_PROGRESS.");
         }
@@ -199,11 +195,13 @@ public class TaskServiceImpl implements TaskService {
             case IN_ANALYSIS -> List.of(TaskStatus.IN_PROGRESS, TaskStatus.BLOCKED, TaskStatus.CANCELLED);
             case IN_PROGRESS -> List.of(TaskStatus.COMPLETED, TaskStatus.BLOCKED, TaskStatus.CANCELLED);
             case BLOCKED -> List.of(TaskStatus.IN_ANALYSIS, TaskStatus.IN_PROGRESS);
-            case CANCELLED, COMPLETED -> List.of();
+            case CANCELLED -> List.of();
+            case COMPLETED -> throw new RuntimeException("Cannot change status of a completed task.");
         };
 
         if (!allowedTransitions.contains(newStatus)) {
             throw new RuntimeException("Invalid state transition from " + currentStatus + " to " + newStatus);
         }
     }
+
 }
