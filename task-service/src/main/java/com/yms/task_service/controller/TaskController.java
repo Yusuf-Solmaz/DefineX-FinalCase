@@ -1,9 +1,10 @@
 package com.yms.task_service.controller;
 
-import com.yms.task_service.dto.TaskDto;
+import com.yms.task_service.dto.TaskResponse;
 import com.yms.task_service.dto.UpdateTaskStatusRequest;
+import com.yms.task_service.dto.UserResponse;
 import com.yms.task_service.dto.request.TaskRequest;
-import com.yms.task_service.entity.Task;
+import com.yms.task_service.dto.request.TaskUpdateRequest;
 import com.yms.task_service.service.abstracts.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,40 +24,51 @@ public class TaskController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<TaskDto> createTask(@RequestBody @Valid TaskRequest taskRequest, @RequestHeader("Authorization") String token) {
-        TaskDto savedTask = taskService.save(taskRequest, token);
+    public ResponseEntity<TaskResponse> createTask(
+            @RequestBody @Valid TaskRequest taskRequest,
+            @RequestHeader("Authorization") String token) {
+        TaskResponse savedTask = taskService.save(taskRequest, token);
         return ResponseEntity.created(
                 URI.create("/api/v1/tasks" + "/" + savedTask.id())
         ).body(savedTask);
     }
 
+    @PutMapping("/{taskId}")
+    public ResponseEntity<TaskResponse> updateTask(
+            @PathVariable Integer taskId,
+            @RequestBody TaskUpdateRequest request,
+            @RequestHeader("Authorization") String token) {
+
+        TaskResponse updatedTask = taskService.updateTask(taskId, request,token);
+        return ResponseEntity.ok(updatedTask);
+    }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TaskDto> getTaskById(@PathVariable Integer id) {
-        TaskDto task = taskService.findById(id);
+    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Integer id) {
+        TaskResponse task = taskService.findById(id);
         return ResponseEntity.ok(task);
     }
 
     @GetMapping("/actives/{projectId}")
-    public ResponseEntity<TaskDto> getTaskByIdAndNotCancelled(@PathVariable Integer projectId) {
-        TaskDto task = taskService.findByIdAndNotCancelled(projectId);
+    public ResponseEntity<TaskResponse> getTaskByIdAndNotCancelled(@PathVariable Integer projectId) {
+        TaskResponse task = taskService.findByIdAndNotCancelled(projectId);
         return ResponseEntity.ok(task);
     }
 
 
     @GetMapping("/project/{projectId}")
-    public ResponseEntity<List<TaskDto>> getTasksByProjectId(@PathVariable Integer projectId) {
-        List<TaskDto> tasks = taskService.findAllByProjectId(projectId);
+    public ResponseEntity<List<TaskResponse>> getTasksByProjectId(@PathVariable Integer projectId) {
+        List<TaskResponse> tasks = taskService.findAllByProjectId(projectId);
         return ResponseEntity.ok(tasks);
     }
 
 
     @PatchMapping("/{taskId}/status")
-    public ResponseEntity<TaskDto> updateTaskStatus(
+    public ResponseEntity<TaskResponse> updateTaskStatus(
             @PathVariable Integer taskId,
             @RequestBody UpdateTaskStatusRequest request) {
 
-        TaskDto updatedTask = taskService.updateTaskStatus(taskId, request.status(), request.reason());
+        TaskResponse updatedTask = taskService.updateTaskStatus(taskId, request.status(), request.reason());
         return ResponseEntity.ok(updatedTask);
     }
 
@@ -64,5 +76,10 @@ public class TaskController {
     public ResponseEntity<Void> cancelTask(@PathVariable Integer id) {
         taskService.cancelTask(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/members/{id}")
+    public ResponseEntity<List<UserResponse>> getProjectMember(@PathVariable Integer id, @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(taskService.getAllMembers(id,token));
     }
 }
