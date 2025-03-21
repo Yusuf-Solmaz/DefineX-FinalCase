@@ -5,7 +5,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.yms.comment_service.dto.*;
+import com.yms.comment_service.dto.request.CommentCreateRequest;
+import com.yms.comment_service.dto.request.CommentUpdateRequest;
+import com.yms.comment_service.dto.response.CommentResponse;
+import com.yms.comment_service.dto.response.PagedResponse;
+import com.yms.comment_service.dto.response.TaskResponse;
 import com.yms.comment_service.entity.Comment;
 import com.yms.comment_service.exception.CommentNotFound;
 import com.yms.comment_service.mapper.CommentMapper;
@@ -46,8 +50,8 @@ public class CommentServiceImplTest {
     private Comment existingComment;
     private Comment updatedComment;
 
-    private CommentDto commentDto;
-    private CommentDto updatedCommentDto;
+    private CommentResponse commentResponse;
+    private CommentResponse updatedCommentResponse;
     private TaskResponse taskResponse;
     private CommentUpdateRequest updateRequest;
 
@@ -87,7 +91,7 @@ public class CommentServiceImplTest {
                 .isDeleted(false)
                 .build();
 
-        commentDto = CommentDto.builder()
+        commentResponse = CommentResponse.builder()
                 .taskId(1)
                 .userEmail("user@example.com")
                 .content("Updated comment content")
@@ -103,7 +107,7 @@ public class CommentServiceImplTest {
                 .reason("No reason")
                 .build();
 
-        updatedCommentDto = CommentDto.builder()
+        updatedCommentResponse = CommentResponse.builder()
                 .taskId(1)
                 .userEmail("user@example.com")
                 .content(updateRequest.content())
@@ -118,9 +122,9 @@ public class CommentServiceImplTest {
 
         when(commentRepository.findById("1")).thenReturn(Optional.of(existingComment));
         when(commentRepository.save(any(Comment.class))).thenReturn(updatedComment);
-        when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(updatedCommentDto);
+        when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(updatedCommentResponse);
 
-        CommentDto result = commentService.updateComment("1", updateRequest);
+        CommentResponse result = commentService.updateComment("1", updateRequest);
 
         assertNotNull(result);
         assertEquals(updateRequest.content(), result.content());
@@ -141,12 +145,12 @@ public class CommentServiceImplTest {
         when(taskClient.findTaskById(anyInt(), anyString())).thenReturn(taskResponse);
         when(commentMapper.toComment(any(CommentCreateRequest.class), anyString())).thenReturn(comment);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
-        when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(commentDto);
+        when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(commentResponse);
 
-        CommentDto result = commentService.addComment(commentCreateRequest, "user@example.com", "dummyToken");
+        CommentResponse result = commentService.addComment(commentCreateRequest, "user@example.com", "dummyToken");
 
         assertNotNull(result);
-        assertEquals(commentDto.content(), result.content());
+        assertEquals(commentResponse.content(), result.content());
         verify(taskClient).findTaskById(anyInt(), anyString());
         verify(commentRepository).save(any(Comment.class));
     }
@@ -156,15 +160,15 @@ public class CommentServiceImplTest {
         Page<Comment> commentPage = new PageImpl<>(List.of(comment));
         Pageable pageable = PageRequest.of(0, 10);
 
-        when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(commentDto);
+        when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(commentResponse);
         when(commentRepository.findAllByTaskIdAndIsDeletedFalse(anyInt(), eq(pageable)))
                 .thenReturn(commentPage);
 
-        PagedResponse<CommentDto> result = commentService.getCommentsByTaskId(1, pageable);
+        PagedResponse<CommentResponse> result = commentService.getCommentsByTaskId(1, pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
-        assertEquals(commentDto.content(), result.getContent().getFirst().content());
+        assertEquals(commentResponse.content(), result.getContent().getFirst().content());
         verify(commentRepository).findAllByTaskIdAndIsDeletedFalse(anyInt(), eq(pageable));
     }
 

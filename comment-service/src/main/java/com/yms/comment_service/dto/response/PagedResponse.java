@@ -1,4 +1,4 @@
-package com.yms.comment_service.dto;
+package com.yms.comment_service.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

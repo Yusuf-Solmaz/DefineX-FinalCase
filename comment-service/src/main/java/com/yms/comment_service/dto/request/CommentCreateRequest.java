@@ -1,4 +1,4 @@
-package com.yms.comment_service.dto;
+package com.yms.comment_service.dto.request;
 
 import lombok.Builder;
 

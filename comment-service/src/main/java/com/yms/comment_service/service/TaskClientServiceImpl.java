@@ -1,12 +1,11 @@
 package com.yms.comment_service.service;
 
 import com.yms.comment_service.client.TaskClient;
-import com.yms.comment_service.dto.TaskResponse;
+import com.yms.comment_service.dto.response.TaskResponse;
 import com.yms.comment_service.exception.TaskNotFoundException;
 import com.yms.comment_service.service.abstracts.TaskClientService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Service;
 
 @Service

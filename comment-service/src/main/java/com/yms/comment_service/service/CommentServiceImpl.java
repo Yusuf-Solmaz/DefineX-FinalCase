@@ -1,9 +1,9 @@
 package com.yms.comment_service.service;
 
-import com.yms.comment_service.dto.CommentCreateRequest;
-import com.yms.comment_service.dto.CommentDto;
-import com.yms.comment_service.dto.CommentUpdateRequest;
-import com.yms.comment_service.dto.PagedResponse;
+import com.yms.comment_service.dto.request.CommentCreateRequest;
+import com.yms.comment_service.dto.response.CommentResponse;
+import com.yms.comment_service.dto.request.CommentUpdateRequest;
+import com.yms.comment_service.dto.response.PagedResponse;
 import com.yms.comment_service.entity.Comment;
 import com.yms.comment_service.exception.CommentNotFound;
 import com.yms.comment_service.mapper.CommentMapper;
@@ -25,7 +25,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     @Override
-    public CommentDto addComment(CommentCreateRequest response, String userEmail, String token) {
+    public CommentResponse addComment(CommentCreateRequest response, String userEmail, String token) {
 
         taskClient.findTaskById(response.taskId(),token);
 
@@ -34,8 +34,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public PagedResponse<CommentDto> getCommentsByTaskId(Integer taskId, Pageable pageable) {
-        Page<CommentDto> commentPage = commentRepository.findAllByTaskIdAndIsDeletedFalse(taskId, pageable)
+    public PagedResponse<CommentResponse> getCommentsByTaskId(Integer taskId, Pageable pageable) {
+        Page<CommentResponse> commentPage = commentRepository.findAllByTaskIdAndIsDeletedFalse(taskId, pageable)
                 .map(commentMapper::toCommentDto);
 
         return new PagedResponse<>(
@@ -49,7 +49,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDto updateComment(String commentId, CommentUpdateRequest updateRequest) {
+    public CommentResponse updateComment(String commentId, CommentUpdateRequest updateRequest) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFound("Comment not found with id: " + commentId));
 

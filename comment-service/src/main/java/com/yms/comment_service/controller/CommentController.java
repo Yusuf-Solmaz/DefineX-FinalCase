@@ -1,9 +1,9 @@
 package com.yms.comment_service.controller;
 
-import com.yms.comment_service.dto.CommentCreateRequest;
-import com.yms.comment_service.dto.CommentDto;
-import com.yms.comment_service.dto.CommentUpdateRequest;
-import com.yms.comment_service.dto.PagedResponse;
+import com.yms.comment_service.dto.request.CommentCreateRequest;
+import com.yms.comment_service.dto.response.CommentResponse;
+import com.yms.comment_service.dto.request.CommentUpdateRequest;
+import com.yms.comment_service.dto.response.PagedResponse;
 import com.yms.comment_service.service.abstracts.CommentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -26,19 +26,19 @@ public class CommentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CommentDto> createComment(
+    public ResponseEntity<CommentResponse> createComment(
             @RequestBody @Valid CommentCreateRequest comment,
             @RequestHeader("Authorization") String token,
             HttpServletRequest request) {
-        CommentDto commentDto = commentService.addComment(comment, getAuthenticatedUserEmail(request),token);
+        CommentResponse commentResponse = commentService.addComment(comment, getAuthenticatedUserEmail(request),token);
 
         return ResponseEntity.created(
-                URI.create("/api/v1/comments"+"/"+commentDto.taskId())
-        ).body(commentDto);
+                URI.create("/api/v1/comments"+"/"+ commentResponse.taskId())
+        ).body(commentResponse);
     }
 
     @GetMapping("{taskId}")
-    public ResponseEntity<PagedResponse<CommentDto>> getAllComments(
+    public ResponseEntity<PagedResponse<CommentResponse>> getAllComments(
             @PathVariable Integer taskId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -48,11 +48,11 @@ public class CommentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CommentDto> updateComment(
+    public ResponseEntity<CommentResponse> updateComment(
             @PathVariable String id,
             @RequestBody @Valid CommentUpdateRequest updateRequest
     ) {
-        CommentDto updatedComment = commentService.updateComment(id, updateRequest);
+        CommentResponse updatedComment = commentService.updateComment(id, updateRequest);
         return ResponseEntity.ok(updatedComment);
     }
 

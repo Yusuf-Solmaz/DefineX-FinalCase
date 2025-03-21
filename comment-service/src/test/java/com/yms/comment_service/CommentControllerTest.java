@@ -1,10 +1,10 @@
 package com.yms.comment_service;
 
 import com.yms.comment_service.controller.CommentController;
-import com.yms.comment_service.dto.CommentDto;
-import com.yms.comment_service.dto.CommentCreateRequest;
-import com.yms.comment_service.dto.CommentUpdateRequest;
-import com.yms.comment_service.dto.PagedResponse;
+import com.yms.comment_service.dto.response.CommentResponse;
+import com.yms.comment_service.dto.request.CommentCreateRequest;
+import com.yms.comment_service.dto.request.CommentUpdateRequest;
+import com.yms.comment_service.dto.response.PagedResponse;
 import com.yms.comment_service.exception.GlobalExceptionHandler;
 import com.yms.comment_service.service.abstracts.CommentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +51,7 @@ class CommentControllerTest {
                 .content("Updated test comment")
                 .build();
 
-        CommentDto updatedCommentDto = CommentDto.builder()
+        CommentResponse updatedCommentResponse = CommentResponse.builder()
                 .taskId(1)
                 .userEmail("test@example.com")
                 .content("Updated test comment")
@@ -59,7 +59,7 @@ class CommentControllerTest {
                 .build();
 
         when(commentService.updateComment(anyString(), any(CommentUpdateRequest.class)))
-                .thenReturn(updatedCommentDto);
+                .thenReturn(updatedCommentResponse);
 
         // Act and Assert
         mockMvc.perform(put("/api/v1/comments/{id}", "123")
@@ -77,15 +77,15 @@ class CommentControllerTest {
     @Test
     void testGetAllComments_ShouldReturnPagedResponse() throws Exception {
         // Arrange
-        CommentDto commentDto = CommentDto.builder()
+        CommentResponse commentResponse = CommentResponse.builder()
                 .taskId(1)
                 .userEmail("test@example.com")
                 .content("This is a test comment")
                 .createdAt(null)
                 .build();
 
-        PagedResponse<CommentDto> pagedResponse = new PagedResponse<>(
-                List.of(commentDto),
+        PagedResponse<CommentResponse> pagedResponse = new PagedResponse<>(
+                List.of(commentResponse),
                 0,
                 10,
                 1L,
@@ -113,14 +113,14 @@ class CommentControllerTest {
                 .content("This is a test comment")
                 .build();
 
-        CommentDto commentDto = CommentDto.builder()
+        CommentResponse commentResponse = CommentResponse.builder()
                 .taskId(1)
                 .userEmail("test@example.com")
                 .content("This is a test comment")
                 .createdAt(null)
                 .build();
 
-        when(commentService.addComment(any(), anyString(), anyString())).thenReturn(commentDto);
+        when(commentService.addComment(any(), anyString(), anyString())).thenReturn(commentResponse);
 
         // Act and Assert
         mockMvc.perform(post("/api/v1/comments")
