@@ -1,4 +1,4 @@
-package com.yms.auth_service.controller;
+package com.yms.auth_service.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

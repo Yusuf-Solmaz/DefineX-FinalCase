@@ -1,8 +1,8 @@
 package com.yms.auth_service.controller;
 
 import com.yms.auth_service.dto.request.RegistrationRequest;
-import com.yms.auth_service.dto.response.UserDto;
-import com.yms.auth_service.entity.Role;
+import com.yms.auth_service.service.AuthenticationServiceImpl;
+import com.yms.auth_service.service.abstracts.AuthenticationService;
 import com.yms.auth_service.service.abstracts.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
