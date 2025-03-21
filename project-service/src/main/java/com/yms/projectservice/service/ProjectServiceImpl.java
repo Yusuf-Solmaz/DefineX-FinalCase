@@ -1,7 +1,7 @@
 package com.yms.projectservice.service;
 
 import com.yms.projectservice.dto.PagedResponse;
-import com.yms.projectservice.dto.ProjectDto;
+import com.yms.projectservice.dto.ProjectResponse;
 import com.yms.projectservice.dto.ProjectRequest;
 import com.yms.projectservice.dto.UserResponse;
 import com.yms.projectservice.entity.Project;
@@ -28,14 +28,16 @@ public class ProjectServiceImpl implements ProjectService {
     private final MemberClientService memberClient;
 
     @Override
-    public ProjectDto findById(Integer id) {
+    public ProjectResponse findById(Integer id) {
+
         return projectRepository.findById(id)
                 .map(projectMapper::toProjectDto)
                 .orElseThrow(() -> new ProjectNotFound("Project with ID " + id + " not found!"));
+
     }
 
     @Override
-    public ProjectDto save(ProjectRequest projectRequest, String token) {
+    public ProjectResponse save(ProjectRequest projectRequest, String token) {
 
         Project project = projectMapper.toProject(projectRequest);
 
@@ -57,9 +59,10 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public PagedResponse<ProjectDto> findAll(Pageable pageable) {
-        Page<ProjectDto> projects = projectRepository.findAll(pageable)
+    public PagedResponse<ProjectResponse> findAll(Pageable pageable) {
+        Page<ProjectResponse> projects = projectRepository.findAll(pageable)
                 .map(projectMapper::toProjectDto);
+
 
         return new PagedResponse<>(
                 projects.getContent(),
@@ -73,8 +76,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
-    public PagedResponse<ProjectDto> getAllActiveProjects(Pageable pageable) {
-        Page<ProjectDto> projects = projectRepository.findAllActives(pageable)
+    public PagedResponse<ProjectResponse> getAllActiveProjects(Pageable pageable) {
+        Page<ProjectResponse> projects = projectRepository.findAllActives(pageable)
                 .map(projectMapper::toProjectDto);
 
         return new PagedResponse<>(
@@ -112,8 +115,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
-    public List<ProjectDto> findByDepartmentName(String name) {
-        List<ProjectDto> projects = projectRepository.findAllByDepartmentName(name)
+    public List<ProjectResponse> findByDepartmentName(String name) {
+        List<ProjectResponse> projects = projectRepository.findAllByDepartmentName(name)
                 .stream()
                 .map(projectMapper::toProjectDto)
                 .toList();

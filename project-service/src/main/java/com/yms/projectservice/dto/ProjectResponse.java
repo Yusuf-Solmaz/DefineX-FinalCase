@@ -4,11 +4,12 @@ import lombok.Builder;
 
 
 @Builder
-public record ProjectDto(
+public record ProjectResponse(
         Long id,
         String title,
         String description,
         String departmentName,
-        String projectStatus
+        String projectStatus,
+        boolean isDeleted
 ) {
 }

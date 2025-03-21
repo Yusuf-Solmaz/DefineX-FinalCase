@@ -1,22 +1,22 @@
 package com.yms.projectservice.mapper;
 
-import com.yms.projectservice.dto.ProjectDto;
+import com.yms.projectservice.dto.ProjectResponse;
 import com.yms.projectservice.dto.ProjectRequest;
 import com.yms.projectservice.entity.Project;
 import com.yms.projectservice.entity.ProjectStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
 
 @Mapper(componentModel = "spring")
 public interface ProjectMapper {
 
     @Mapping(source = "status", target = "projectStatus")
-    ProjectDto toProjectDto(Project project);
+    @Mapping(source = "deleted", target = "isDeleted")
+    ProjectResponse toProjectDto(Project project);
 
     @Mapping(source = "projectStatus", target = "status")
-    Project toProject(ProjectDto projectDto);
+    Project toProject(ProjectResponse projectResponse);
 
     @Mapping(source = "projectStatus", target = "status")
     Project toProject(ProjectRequest projectRequest);

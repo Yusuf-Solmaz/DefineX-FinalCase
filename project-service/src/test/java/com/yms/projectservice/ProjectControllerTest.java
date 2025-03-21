@@ -3,7 +3,7 @@ package com.yms.projectservice;
 import com.yms.projectservice.controller.ProjectController;
 import com.yms.projectservice.dto.PagedResponse;
 import com.yms.projectservice.dto.ProjectRequest;
-import com.yms.projectservice.dto.ProjectDto;
+import com.yms.projectservice.dto.ProjectResponse;
 import com.yms.projectservice.dto.UserResponse;
 import com.yms.projectservice.exception.GlobalExceptionHandler;
 import com.yms.projectservice.service.abstracts.ProjectService;
@@ -37,7 +37,7 @@ public class ProjectControllerTest {
     private ProjectService projectService;
 
 
-    private ProjectDto projectDto;
+    private ProjectResponse projectResponse;
 
     @BeforeEach
     void setUp() {
@@ -47,7 +47,7 @@ public class ProjectControllerTest {
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
-        projectDto = ProjectDto.builder()
+        projectResponse = ProjectResponse.builder()
                 .id(1L)
                 .title("Test Project")
                 .description("This is a test project.")
@@ -59,8 +59,8 @@ public class ProjectControllerTest {
     @Test
     void getAllProjects_ShouldReturnPagedResponse() throws Exception {
         Pageable pageable = PageRequest.of(0, 10);
-        PagedResponse<ProjectDto> pagedResponse = new PagedResponse<>(
-                List.of(projectDto), 0, 10, 1L, 1, true
+        PagedResponse<ProjectResponse> pagedResponse = new PagedResponse<>(
+                List.of(projectResponse), 0, 10, 1L, 1, true
         );
 
         when(projectService.findAll(pageable)).thenReturn(pagedResponse);
@@ -76,7 +76,7 @@ public class ProjectControllerTest {
 
     @Test
     void getProjectsByDepartment_ShouldReturnList() throws Exception {
-        List<ProjectDto> projects = Collections.singletonList(projectDto);
+        List<ProjectResponse> projects = Collections.singletonList(projectResponse);
 
         when(projectService.findByDepartmentName("IT")).thenReturn(projects);
 
@@ -89,7 +89,7 @@ public class ProjectControllerTest {
 
     @Test
     void getProjectById_ShouldReturnProject() throws Exception {
-        when(projectService.findById(1)).thenReturn(projectDto);
+        when(projectService.findById(1)).thenReturn(projectResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/projects/1"))
                 .andExpect(status().isOk())
@@ -102,7 +102,7 @@ public class ProjectControllerTest {
     void createProject_ShouldReturnCreated() throws Exception {
         String token = "Bearer token";
         when(projectService.save(ArgumentMatchers.any(ProjectRequest.class), ArgumentMatchers.anyString()))
-                .thenReturn(projectDto);
+                .thenReturn(projectResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/projects")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -1,6 +1,5 @@
 package com.yms.projectservice.repository;
 
-import com.yms.projectservice.dto.ProjectDto;
 import com.yms.projectservice.entity.Project;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

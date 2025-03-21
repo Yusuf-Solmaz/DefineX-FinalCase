@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 import com.yms.projectservice.dto.PagedResponse;
-import com.yms.projectservice.dto.ProjectDto;
+import com.yms.projectservice.dto.ProjectResponse;
 import com.yms.projectservice.dto.ProjectRequest;
 import com.yms.projectservice.dto.UserResponse;
 import com.yms.projectservice.entity.Project;
@@ -46,7 +46,7 @@ public class ProjectServiceImplTest {
 
     private ProjectRequest projectRequest;
     private Project project;
-    private ProjectDto projectDto;
+    private ProjectResponse projectResponse;
     private List<UserResponse> userResponses;
 
     @BeforeEach
@@ -69,7 +69,7 @@ public class ProjectServiceImplTest {
                 .status(ProjectStatus.IN_PROGRESS)
                 .build();
 
-        projectDto = ProjectDto.builder()
+        projectResponse = ProjectResponse.builder()
                 .id(1L)
                 .title("Test Project")
                 .description("This is a test project.")
@@ -109,25 +109,25 @@ public class ProjectServiceImplTest {
     void testSave_ShouldSaveAndReturnProjectDto() {
         when(projectMapper.toProject(any(ProjectRequest.class))).thenReturn(project);
         when(projectRepository.save(any(Project.class))).thenReturn(project);
-        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectDto);
+        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectResponse);
         when(memberClient.findUsersByIds(any(), any())).thenReturn(userResponses);
 
-        ProjectDto result = projectService.save(projectRequest, "dummyToken");
+        ProjectResponse result = projectService.save(projectRequest, "dummyToken");
 
         assertNotNull(result);
-        assertEquals(projectDto.title(), result.title());
+        assertEquals(projectResponse.title(), result.title());
         verify(projectRepository).save(any(Project.class));
     }
 
     @Test
     void testFindById_ShouldReturnProjectDto() {
         when(projectRepository.findById(anyInt())).thenReturn(Optional.of(project));
-        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectDto);
+        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectResponse);
 
-        ProjectDto result = projectService.findById(1);
+        ProjectResponse result = projectService.findById(1);
 
         assertNotNull(result);
-        assertEquals(projectDto.title(), result.title());
+        assertEquals(projectResponse.title(), result.title());
         verify(projectRepository).findById(anyInt());
     }
 
@@ -162,13 +162,13 @@ public class ProjectServiceImplTest {
         PageImpl<Project> projectPage = new PageImpl<>(List.of(project));
 
         when(projectRepository.findAll(pageable)).thenReturn(projectPage);
-        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectDto);
+        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectResponse);
 
-        PagedResponse<ProjectDto> result = projectService.findAll(pageable);
+        PagedResponse<ProjectResponse> result = projectService.findAll(pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
-        assertEquals(projectDto.title(), result.getContent().getFirst().title());
+        assertEquals(projectResponse.title(), result.getContent().getFirst().title());
         verify(projectRepository).findAll(pageable);
     }
 
@@ -178,13 +178,13 @@ public class ProjectServiceImplTest {
         PageImpl<Project> projectPage = new PageImpl<>(List.of(project));
 
         when(projectRepository.findAllActives(pageable)).thenReturn(projectPage);
-        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectDto);
+        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectResponse);
 
-        PagedResponse<ProjectDto> result = projectService.getAllActiveProjects(pageable);
+        PagedResponse<ProjectResponse> result = projectService.getAllActiveProjects(pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
-        assertEquals(projectDto.title(), result.getContent().getFirst().title());
+        assertEquals(projectResponse.title(), result.getContent().getFirst().title());
         verify(projectRepository).findAllActives(pageable);
     }
 
@@ -213,13 +213,13 @@ public class ProjectServiceImplTest {
     @Test
     void testFindByDepartmentName_ShouldReturnProjects() {
         when(projectRepository.findAllByDepartmentName(anyString())).thenReturn(List.of(project));
-        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectDto);
+        when(projectMapper.toProjectDto(any(Project.class))).thenReturn(projectResponse);
 
-        List<ProjectDto> result = projectService.findByDepartmentName("IT");
+        List<ProjectResponse> result = projectService.findByDepartmentName("IT");
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(projectDto.title(), result.getFirst().title());
+        assertEquals(projectResponse.title(), result.getFirst().title());
         verify(projectRepository).findAllByDepartmentName(anyString());
     }
 

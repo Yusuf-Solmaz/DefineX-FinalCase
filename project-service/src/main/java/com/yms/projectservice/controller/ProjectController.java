@@ -3,7 +3,7 @@ package com.yms.projectservice.controller;
 import com.yms.projectservice.dto.PagedResponse;
 import com.yms.projectservice.dto.ProjectRequest;
 import com.yms.projectservice.dto.UserResponse;
-import com.yms.projectservice.dto.ProjectDto;
+import com.yms.projectservice.dto.ProjectResponse;
 import com.yms.projectservice.service.abstracts.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class ProjectController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<PagedResponse<ProjectDto>> getAllProjects(
+    public ResponseEntity<PagedResponse<ProjectResponse>> getAllProjects(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
@@ -33,7 +33,7 @@ public class ProjectController {
     }
 
     @GetMapping("/actives")
-    public ResponseEntity<PagedResponse<ProjectDto>> getAllComments(
+    public ResponseEntity<PagedResponse<ProjectResponse>> getAllComments(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -42,22 +42,22 @@ public class ProjectController {
     }
 
     @GetMapping("/department/{name}")
-    public List<ProjectDto> getProjectsByDepartment(@PathVariable String name) {
+    public List<ProjectResponse> getProjectsByDepartment(@PathVariable String name) {
         return projectService.findByDepartmentName(name);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<ProjectDto> getProjectById(@PathVariable Integer id){
+    public ResponseEntity<ProjectResponse> getProjectById(@PathVariable Integer id){
         return ResponseEntity.ok(projectService.findById(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ProjectDto> createProject(
+    public ResponseEntity<ProjectResponse> createProject(
             @RequestBody @Valid ProjectRequest projectRequest,
             @RequestHeader("Authorization") String token) {
 
-        ProjectDto savedProject = projectService.save(projectRequest, token);
+        ProjectResponse savedProject = projectService.save(projectRequest, token);
 
         return ResponseEntity.created(
                 URI.create("/api/v1/projects/" + savedProject.id())

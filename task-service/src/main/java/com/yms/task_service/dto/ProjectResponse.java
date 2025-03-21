@@ -9,6 +9,7 @@ public record ProjectResponse
                 String title,
                 String description,
                 String departmentName,
-                String projectStatus
+                String projectStatus,
+                boolean isDeleted
         ) {
 }
