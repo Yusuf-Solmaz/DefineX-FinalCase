@@ -1,4 +1,4 @@
-package com.yms.task_service.dto;
+package com.yms.task_service.dto.response;
 
 import lombok.Builder;
 
