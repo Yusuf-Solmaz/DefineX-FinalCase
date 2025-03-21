@@ -1,13 +1,17 @@
 package com.yms.auth_service.controller;
 
 import com.yms.auth_service.dto.request.RegistrationRequest;
+import com.yms.auth_service.dto.request.UserUpdateRequest;
 import com.yms.auth_service.dto.response.PagedResponse;
 import com.yms.auth_service.dto.response.UserResponse;
 import com.yms.auth_service.service.abstracts.UserService;
+import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,16 +29,17 @@ public class UserController {
         return ResponseEntity.ok(userResponse);
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_TEAM_LEADER','ROLE_TEAM_MANAGER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable  Integer id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping()
-    public ResponseEntity<UserResponse> updateAuthenticatedUser(@RequestBody RegistrationRequest request) {
-        userService.updateAuthenticatedUser(request);
-        return ResponseEntity.ok().build();
+    @PutMapping("/authenticated")
+    public ResponseEntity<UserResponse> updateAuthenticatedUser(@RequestBody @Valid UserUpdateRequest request) throws MessagingException {
+        UserResponse response = userService.updateAuthenticatedUser(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
