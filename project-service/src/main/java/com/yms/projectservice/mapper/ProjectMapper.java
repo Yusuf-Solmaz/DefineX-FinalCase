@@ -13,10 +13,7 @@ public interface ProjectMapper {
 
     @Mapping(source = "status", target = "projectStatus")
     @Mapping(source = "deleted", target = "isDeleted")
-    ProjectResponse toProjectDto(Project project);
-
-    @Mapping(source = "projectStatus", target = "status")
-    Project toProject(ProjectResponse projectResponse);
+    ProjectResponse toProjectResponse(Project project);
 
     @Mapping(source = "projectStatus", target = "status")
     Project toProject(ProjectCreateRequest projectCreateRequest);
