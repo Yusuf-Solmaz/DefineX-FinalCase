@@ -7,12 +7,15 @@ import com.yms.task_service.entity.Task;
 import com.yms.task_service.entity.TaskPriority;
 import com.yms.task_service.entity.TaskStatus;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface TaskMapper {
 
+    @Mapping(source = "deleted", target = "isDeleted")
     TaskResponse toTaskDto(Task task);
+
     Task toTask(TaskRequest taskRequest);
 
     default String mapTaskStatusToString(TaskStatus status) {
