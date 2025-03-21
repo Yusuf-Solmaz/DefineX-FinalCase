@@ -1,5 +1,6 @@
 package com.yms.projectservice.controller;
 
+import com.yms.projectservice.dto.request.ProjectUpdateRequest;
 import com.yms.projectservice.dto.response.PagedResponse;
 import com.yms.projectservice.dto.request.ProjectCreateRequest;
 import com.yms.projectservice.dto.response.UserResponse;
@@ -81,4 +82,13 @@ public class ProjectController {
     }
 
 
+    @PutMapping("/{projectId}")
+    public ResponseEntity<ProjectResponse> updateTask(
+            @PathVariable Integer projectId,
+            @RequestBody ProjectUpdateRequest request,
+            @RequestHeader("Authorization") String token) {
+
+        ProjectResponse updateProject = projectService.updateProject(projectId, request,token);
+        return ResponseEntity.ok(updateProject);
+    }
 }

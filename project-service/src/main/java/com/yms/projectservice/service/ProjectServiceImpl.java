@@ -1,5 +1,6 @@
 package com.yms.projectservice.service;
 
+import com.yms.projectservice.dto.request.ProjectUpdateRequest;
 import com.yms.projectservice.dto.response.PagedResponse;
 import com.yms.projectservice.dto.response.ProjectResponse;
 import com.yms.projectservice.dto.request.ProjectCreateRequest;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -127,6 +129,46 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
 
+    @Override
+    public ProjectResponse updateProject(Integer id, ProjectUpdateRequest updateRequest, String token) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ProjectNotFound("Project with ID " + id + " not found!"));
+
+        mergeProjectDetails(project, updateRequest, token);
+
+        projectRepository.save(project);
+        return projectMapper.toProjectDto(project);
+    }
+
+    private void mergeProjectDetails(Project project, ProjectUpdateRequest updateRequest, String token) {
+        if (updateRequest.title() != null && !updateRequest.title().isEmpty()) {
+            project.setTitle(updateRequest.title());
+        }
+
+        if (updateRequest.description() != null && !updateRequest.description().isEmpty()) {
+            project.setDescription(updateRequest.description());
+        }
+
+        if (updateRequest.teamMemberIds() != null && !updateRequest.teamMemberIds().isEmpty()) {
+            validateTeamMembers(updateRequest.teamMemberIds(), token);
+            project.setTeamMemberIds(updateRequest.teamMemberIds());
+        }
+
+        if (updateRequest.departmentName() != null && !updateRequest.departmentName().isEmpty()) {
+            project.setDepartmentName(updateRequest.departmentName());
+        }
+
+        if (updateRequest.projectStatus() != null) {
+            ProjectStatus newStatus = projectMapper.mapStringToProjectStatus(updateRequest.projectStatus());
+            if (newStatus != null) {
+                validateStateTransition(project.getStatus(), newStatus);
+                project.setStatus(newStatus);
+            } else {
+                throw new IllegalArgumentException("Invalid project status value: " + updateRequest.projectStatus());
+            }
+        }
+    }
+
     private void validateTeamMembers(List<Integer> teamMemberIds,String token) {
         if (teamMemberIds == null || teamMemberIds.isEmpty()) {
             return;
@@ -146,5 +188,25 @@ public class ProjectServiceImpl implements ProjectService {
             throw new NoMembersFoundException("Invalid team member IDs: " + invalidIds);
         }
     }
+
+    private void validateStateTransition(ProjectStatus currentStatus, ProjectStatus newStatus) {
+        if (newStatus == ProjectStatus.BLOCKED && currentStatus != ProjectStatus.IN_ANALYSIS && currentStatus != ProjectStatus.IN_PROGRESS) {
+            throw new RuntimeException("Tasks can only be blocked if they are in IN_ANALYSIS or IN_PROGRESS.");
+        }
+
+        List<ProjectStatus> allowedTransitions = switch (currentStatus) {
+            case BACKLOG -> List.of(ProjectStatus.IN_ANALYSIS);
+            case IN_ANALYSIS -> List.of(ProjectStatus.IN_PROGRESS, ProjectStatus.BLOCKED, ProjectStatus.CANCELLED);
+            case IN_PROGRESS -> List.of(ProjectStatus.COMPLETED, ProjectStatus.BLOCKED, ProjectStatus.CANCELLED);
+            case BLOCKED -> List.of(ProjectStatus.IN_ANALYSIS, ProjectStatus.IN_PROGRESS);
+            case CANCELLED -> List.of();
+            case COMPLETED -> throw new RuntimeException("Cannot change status of a completed task.");
+        };
+
+        if (!allowedTransitions.contains(newStatus)) {
+            throw new RuntimeException("Invalid state transition from " + currentStatus + " to " + newStatus);
+        }
+    }
+
 
 }

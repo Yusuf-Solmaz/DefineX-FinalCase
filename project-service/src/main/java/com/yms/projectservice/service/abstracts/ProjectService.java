@@ -1,5 +1,6 @@
 package com.yms.projectservice.service.abstracts;
 
+import com.yms.projectservice.dto.request.ProjectUpdateRequest;
 import com.yms.projectservice.dto.response.PagedResponse;
 import com.yms.projectservice.dto.response.ProjectResponse;
 import com.yms.projectservice.dto.request.ProjectCreateRequest;
@@ -20,4 +21,5 @@ public interface ProjectService {
     List<ProjectResponse> findByDepartmentName(String name);
 
     PagedResponse<ProjectResponse> getAllActiveProjects(Pageable pageable);
+    ProjectResponse updateProject(Integer id, ProjectUpdateRequest updateRequest, String token);
 }
