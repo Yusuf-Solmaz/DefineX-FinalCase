@@ -1,6 +1,7 @@
 package com.yms.auth_service.service;
 
-import com.yms.auth_service.dto.request.RegistrationRequest;
+import com.yms.auth_service.activation.AccountActivation;
+import com.yms.auth_service.dto.request.UserUpdateRequest;
 import com.yms.auth_service.dto.response.PagedResponse;
 import com.yms.auth_service.dto.response.UserResponse;
 import com.yms.auth_service.entity.Role;
@@ -12,7 +13,8 @@ import com.yms.auth_service.repository.RoleRepository;
 import com.yms.auth_service.repository.TokenRepository;
 import com.yms.auth_service.repository.UserRepository;
 import com.yms.auth_service.service.abstracts.UserService;
-import lombok.AllArgsConstructor;
+import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -24,13 +26,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
     private final RoleRepository roleRepository;
+    private final AccountActivation activation;
 
     @Override
     public UserResponse getAuthenticatedUser() {
@@ -61,40 +64,21 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("User with ID " + id + " not found!"));
     }
 
-
     @Override
-    public void updateAuthenticatedUser(RegistrationRequest updatedUser) {
-        User user = getCurrentAuthenticatedUser();
+    public void updateUser(Integer id, UserUpdateRequest updatedUser) throws MessagingException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User with ID " + id + " not found!"));
 
-        if (!user.getEmail().equals(updatedUser.email()) &&
-                userRepository.findByEmail(updatedUser.email()).isPresent()) {
-            throw new IllegalStateException("Email is already in use");
-        }
-
-        user.setFirstname(updatedUser.firstname());
-        user.setLastname(updatedUser.lastname());
-        user.setEmail(updatedUser.email());
-
-
-        if (updatedUser.password() != null && !updatedUser.password().isBlank()) {
-            user.setPassword(passwordEncoder.encode(updatedUser.password()));
-        }
-
-        userRepository.save(user);
+        mergeUserDetails(user, updatedUser);
+        userMapper.toDto(userRepository.save(user));
     }
 
+    @Override
+    public UserResponse updateAuthenticatedUser(UserUpdateRequest updatedUser) throws MessagingException {
+        User user = getCurrentAuthenticatedUser();
 
-
-    private User getCurrentAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalStateException("User is not authenticated");
-        }
-
-        String email = authentication.getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        mergeUserDetails(user, updatedUser);
+        return userMapper.toDto(userRepository.save(user));
     }
 
     @Override
@@ -131,5 +115,46 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("User with ID " + id + " not found!"));
         user.setDeleted(true);
         userRepository.save(user);
+    }
+
+    private void mergeUserDetails(User user, UserUpdateRequest updatedUser) throws MessagingException {
+        if (updatedUser.firstname() != null && !updatedUser.firstname().isBlank()) {
+            user.setFirstname(updatedUser.firstname());
+        }
+
+        if (updatedUser.lastname() != null && !updatedUser.lastname().isBlank()) {
+            user.setLastname(updatedUser.lastname());
+        }
+
+        if (updatedUser.email() != null && !updatedUser.email().isBlank()) {
+
+            if (!user.getEmail().equals(updatedUser.email())) {
+                if (userRepository.findByEmail(updatedUser.email()).isPresent()) {
+                    throw new IllegalStateException("Email is already in use");
+                }
+
+                user.setEnabled(false);
+                user.setEmail(updatedUser.email());
+
+                activation.sendValidationEmail(user);
+            }
+        }
+
+        if (updatedUser.password() != null && !updatedUser.password().isBlank()) {
+            user.setPassword(passwordEncoder.encode(updatedUser.password()));
+        }
+    }
+
+
+    private User getCurrentAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("User is not authenticated");
+        }
+
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 }
