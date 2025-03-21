@@ -83,9 +83,9 @@ public class ProjectController {
 
 
     @PutMapping("/{projectId}")
-    public ResponseEntity<ProjectResponse> updateTask(
+    public ResponseEntity<ProjectResponse> updateProject(
             @PathVariable Integer projectId,
-            @RequestBody ProjectUpdateRequest request,
+            @RequestBody @Valid ProjectUpdateRequest request,
             @RequestHeader("Authorization") String token) {
 
         ProjectResponse updateProject = projectService.updateProject(projectId, request,token);
