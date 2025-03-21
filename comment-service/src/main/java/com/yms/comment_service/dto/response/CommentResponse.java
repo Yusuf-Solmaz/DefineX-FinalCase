@@ -9,6 +9,7 @@ public record CommentResponse(
         Integer taskId,
         String userEmail,
         String content,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        boolean isDeleted
 ){
 }
