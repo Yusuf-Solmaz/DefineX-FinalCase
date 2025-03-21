@@ -1,10 +1,8 @@
 package com.yms.auth_service.dto.response;
 
-import org.springframework.security.core.GrantedAuthority;
-
 import java.util.List;
 
-public record UserDto(
+public record UserResponse(
         Integer id,
         String firstname,
         String lastname,
