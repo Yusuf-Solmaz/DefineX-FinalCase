@@ -23,6 +23,28 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<ProjectResponse> createProject(
+            @RequestBody @Valid ProjectCreateRequest projectCreateRequest,
+            @RequestHeader("Authorization") String token) {
+
+        ProjectResponse savedProject = projectService.save(projectCreateRequest, token);
+
+        return ResponseEntity.created(
+                URI.create("/api/v1/projects/" + savedProject.id())
+        ).body(savedProject);
+    }
+
+    @PutMapping("/{projectId}")
+    public ResponseEntity<ProjectResponse> updateProject(
+            @PathVariable Integer projectId,
+            @RequestBody @Valid ProjectUpdateRequest request,
+            @RequestHeader("Authorization") String token) {
+
+        ProjectResponse updateProject = projectService.updateProject(projectId, request,token);
+        return ResponseEntity.ok(updateProject);
+    }
 
     @GetMapping("/all")
     public ResponseEntity<PagedResponse<ProjectResponse>> getAllProjects(
@@ -52,25 +74,6 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.findById(id));
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ProjectResponse> createProject(
-            @RequestBody @Valid ProjectCreateRequest projectCreateRequest,
-            @RequestHeader("Authorization") String token) {
-
-        ProjectResponse savedProject = projectService.save(projectCreateRequest, token);
-
-        return ResponseEntity.created(
-                URI.create("/api/v1/projects/" + savedProject.id())
-        ).body(savedProject);
-    }
-
-    @DeleteMapping("{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteProjectById(@PathVariable Integer id){
-        projectService.deleteById(id);
-    }
-
     @GetMapping("/members/{id}")
     public ResponseEntity<List<UserResponse>> getProjectMember(@PathVariable Integer id, @RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(projectService.getAllMembers(id,token));
@@ -81,14 +84,9 @@ public class ProjectController {
         return projectService.getAllMembersId(id);
     }
 
-
-    @PutMapping("/{projectId}")
-    public ResponseEntity<ProjectResponse> updateProject(
-            @PathVariable Integer projectId,
-            @RequestBody @Valid ProjectUpdateRequest request,
-            @RequestHeader("Authorization") String token) {
-
-        ProjectResponse updateProject = projectService.updateProject(projectId, request,token);
-        return ResponseEntity.ok(updateProject);
+    @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProjectById(@PathVariable Integer id){
+        projectService.deleteById(id);
     }
 }
