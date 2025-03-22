@@ -24,7 +24,7 @@ public class MemberClientServiceImpl implements MemberClientService {
         }catch (FeignException.NotFound e){
             throw new NoMembersFoundException(ErrorMessages.NO_MEMBERS_FOUND);
         }catch (Exception e){
-            throw new UserServiceUnavailableException(ErrorMessages.USER_SERVICE_UNAVAILABLE);
+            throw new UserServiceUnavailableException(String.format(ErrorMessages.USER_SERVICE_UNAVAILABLE, e.getMessage()));
         }
     }
 }
