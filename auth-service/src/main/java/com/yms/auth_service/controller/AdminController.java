@@ -2,9 +2,9 @@ package com.yms.auth_service.controller;
 
 import com.yms.auth_service.dto.request.RegistrationRequest;
 import com.yms.auth_service.dto.request.UserUpdateRequest;
-import com.yms.auth_service.service.AuthenticationServiceImpl;
 import com.yms.auth_service.service.abstracts.AuthenticationService;
 import com.yms.auth_service.service.abstracts.UserService;
+import com.yms.auth_service.utils.Role;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class AdminController {
     public ResponseEntity<?> register(
             @RequestBody @Valid RegistrationRequest request
     ) throws MessagingException {
-        authenticationService.register(request,"ROLE_PROJECT_MANAGER");
+        authenticationService.register(request, Role.ROLE_PROJECT_MANAGER.name());
         return ResponseEntity.accepted().build();
     }
 
@@ -45,4 +45,9 @@ public class AdminController {
         return ResponseEntity.ok("User updated successfully!");
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable  Integer id) {
+        userService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
