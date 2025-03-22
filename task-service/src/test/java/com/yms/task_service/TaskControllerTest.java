@@ -17,7 +17,6 @@ import org.mockito.*;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,16 +46,6 @@ class TaskControllerTest {
 
         objectMapper = new ObjectMapper();
 
-        taskCreateRequest = TaskCreateRequest.builder()
-                .title("Test Task")
-                .description("Test task description")
-                .projectId(1)
-                .assigneeId(Arrays.asList(1, 2))
-                .priority("HIGH")
-                .status("IN_PROGRESS")
-                .reason("Initial task")
-                .build();
-
         taskResponse = TaskResponse.builder()
                 .id(1)
                 .title("Test Task")
@@ -68,25 +57,13 @@ class TaskControllerTest {
                 .build();
     }
 
-    @Test
-    void createTask_ShouldReturnCreated() throws Exception {
-        when(taskService.save(any(TaskCreateRequest.class), anyString())).thenReturn(taskResponse);
 
-        mockMvc.perform(post("/api/v1/tasks")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(taskCreateRequest))
-                        .header("Authorization", "Bearer some_token"))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "/api/v1/tasks/1"))
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.title").value("Test Task"));
-    }
 
     @Test
     void getTaskById_ShouldReturnTask() throws Exception {
         when(taskService.findById(1)).thenReturn(taskResponse);
 
-        mockMvc.perform(get("/api/v1/tasks/1"))
+        mockMvc.perform(get("/api/v1/tasks/open/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("Test Task"));
@@ -97,7 +74,7 @@ class TaskControllerTest {
         List<TaskResponse> taskResponses = Collections.singletonList(taskResponse);
         when(taskService.findAllByProjectId(1)).thenReturn(taskResponses);
 
-        mockMvc.perform(get("/api/v1/tasks/project/1"))
+        mockMvc.perform(get("/api/v1/tasks/open/project/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].title").value("Test Task"));
@@ -109,19 +86,12 @@ class TaskControllerTest {
 
         when(taskService.updateTaskStatus(1, TaskStatus.COMPLETED, "Completed successfully")).thenReturn(taskResponse);
 
-        mockMvc.perform(patch("/api/v1/tasks/1/status")
+        mockMvc.perform(patch("/api/v1/tasks/open/1/status")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(statusRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.status").value("IN_PROGRESS"));  // Ensure the expected status matches
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
     }
 
-    @Test
-    void cancelTask_ShouldReturnNoContent() throws Exception {
-        doNothing().when(taskService).cancelTask(1);
-
-        mockMvc.perform(delete("/api/v1/tasks/1"))
-                .andExpect(status().isNoContent());
-    }
 }

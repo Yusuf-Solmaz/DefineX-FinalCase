@@ -5,9 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import com.yms.attachment_service.service.FileStorageService;
 import com.yms.attachment_service.service.abstracts.TaskClientService;
@@ -49,7 +46,7 @@ class FileStorageServiceTest {
             fileStorageService.saveFile(123, file, "token")
         );
 
-        assertEquals("File could not be saved: Unable to write file", exception.getMessage());
+        assertEquals("File could not be saved! Error: Unable to write file", exception.getMessage());
     }
 
 }
