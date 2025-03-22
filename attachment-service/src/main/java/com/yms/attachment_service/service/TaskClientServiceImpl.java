@@ -1,7 +1,9 @@
 package com.yms.attachment_service.service;
 
 import com.yms.attachment_service.client.TaskClient;
+import com.yms.attachment_service.exceptions.ProjectServiceUnavailableException;
 import com.yms.attachment_service.exceptions.TaskNotFoundException;
+import com.yms.attachment_service.exceptions.exception_response.ErrorMessages;
 import com.yms.attachment_service.service.abstracts.TaskClientService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +20,9 @@ public class TaskClientServiceImpl implements TaskClientService {
         try{
             taskClient.findTaskById(id, token);
         }catch (FeignException.NotFound e){
-            throw new TaskNotFoundException("Task with ID " + id + " not found!");
+            throw new TaskNotFoundException(String.format(ErrorMessages.TASK_NOT_FOUND, id));
         }catch (Exception e){
-            throw new RuntimeException("Project service is unavailable. Please try again later.");
+            throw new ProjectServiceUnavailableException(ErrorMessages.PROJECT_SERVICE_UNAVAILABLE);
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.yms.attachment_service.service;
 
 import com.yms.attachment_service.exceptions.FileNotFoundException;
+import com.yms.attachment_service.exceptions.exception_response.ErrorMessages;
 import com.yms.attachment_service.service.abstracts.TaskClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class FileStorageService {
 
             return fileName;
         } catch (IOException e) {
-            throw new RuntimeException("File could not be saved: " + e.getMessage());
+            throw new RuntimeException(String.format(ErrorMessages.FILE_COULD_NOT_SAVE,e.getMessage()));
         }
     }
 
@@ -70,7 +71,7 @@ public class FileStorageService {
         try {
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
-            throw new RuntimeException("Could not delete file: " + e.getMessage());
+            throw new RuntimeException(String.format(ErrorMessages.FILE_COULD_NOT_DELETE,e.getMessage()));
         }
     }
 
@@ -80,13 +81,13 @@ public class FileStorageService {
         Path filePath = getTaskDir(taskId).resolve(fileName);
 
         if (!Files.exists(filePath)) {
-            throw new FileNotFoundException("File not found: " + fileName + " Task ID: " + taskId);
+            throw new FileNotFoundException(String.format(ErrorMessages.FILE_NOT_FOUND,fileName,taskId));
         }
 
         try {
             return Files.readAllBytes(filePath);
         } catch (IOException e) {
-            throw new RuntimeException("File could not be read: " + e.getMessage());
+            throw new RuntimeException(String.format(ErrorMessages.FILE_COULD_NOT_READ,e.getMessage()));
         }
     }
 }
