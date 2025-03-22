@@ -1,43 +1,28 @@
 package com.yms.apigateway.filter;
 
-import com.yms.apigateway.exception.UnouthorizedEntry;
+import com.yms.apigateway.exception.UnauthorizedEntryException;
+import com.yms.apigateway.exception.exception_response.ErrorMessages;
 import com.yms.apigateway.util.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-
-import com.yms.apigateway.util.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
-    @Autowired
-    private RouteValidator validator;
+    private final RouteValidator validator;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    public AuthenticationFilter() {
+    public AuthenticationFilter(RouteValidator validator, JwtUtil jwtUtil) {
         super(Config.class);
+        this.validator = validator;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -60,8 +45,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                         String username = jwtUtil.extractUsername(token);
                         List<String> userRoles = jwtUtil.extractRoles(token);
 
-                        // Endpoint'e erişebilen yetkili rolleri al
-                        List<String> allowedRoles = validator.authorizationRequiredEndpoints.entrySet()
+
+                        List<String> allowedRoles = RouteValidator.authorizationRequiredEndpoints.entrySet()
                                 .stream()
                                 .filter(entry -> path.startsWith(entry.getKey()))
                                 .map(Map.Entry::getValue)
@@ -71,7 +56,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
                         boolean hasPermission = userRoles.stream().anyMatch(allowedRoles::contains);
                         if (!hasPermission) {
-                            return Mono.error(new RuntimeException("Forbidden: Unauthorized Entry"));
+                            return Mono.error(new UnauthorizedEntryException(ErrorMessages.UNAUTHORIZED_ENTRY));
                         }
 
 
@@ -82,10 +67,10 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
                         return chain.filter(exchange.mutate().request(modifiedRequest).build());
                     } catch (Exception e) {
-                        return Mono.error(new RuntimeException("Invalid Token"));
+                        return Mono.error(new UnauthorizedEntryException(ErrorMessages.INVALID_TOKEN));
                     }
                 } else {
-                    throw new UnouthorizedEntry("Unauthorized Entry Exception");
+                    throw new UnauthorizedEntryException(ErrorMessages.UNAUTHORIZED_ENTRY);
                 }
             }
 
