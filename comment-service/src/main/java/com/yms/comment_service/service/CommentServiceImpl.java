@@ -6,6 +6,8 @@ import com.yms.comment_service.dto.request.CommentUpdateRequest;
 import com.yms.comment_service.dto.response.PagedResponse;
 import com.yms.comment_service.entity.Comment;
 import com.yms.comment_service.exception.CommentNotFound;
+import com.yms.comment_service.exception.DeletedCommentUpdateException;
+import com.yms.comment_service.exception.exception_response.ErrorMessages;
 import com.yms.comment_service.mapper.CommentMapper;
 import com.yms.comment_service.repository.CommentRepository;
 import com.yms.comment_service.service.abstracts.CommentService;
@@ -30,16 +32,11 @@ public class CommentServiceImpl implements CommentService {
 
         taskClient.findTaskById(response.taskId(), token);
 
-        System.out.println("CommentCreateRequest id: " + response.taskId());
-
-
         Comment comment = commentMapper.toComment(response, userEmail);
-        System.out.println("comment token: " + comment.getId());
 
         if (comment.getCreatedAt() == null) {
             comment.setCreatedAt(LocalDateTime.now());
         }
-
 
         Comment savedComment = commentRepository.save(comment);
         return commentMapper.toCommentResponse(savedComment);
@@ -63,13 +60,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentResponse updateComment(String commentId, CommentUpdateRequest updateRequest) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CommentNotFound("Comment not found with id: " + commentId));
+                .orElseThrow(() -> new CommentNotFound(String.format(ErrorMessages.COMMENT_NOT_FOUND,commentId)));
 
         if (comment.isDeleted()) {
-            throw new CommentNotFound("Cannot update a deleted comment.");
-        }
-        if (comment.getContent() == null  || comment.getContent().isEmpty()) {
-            throw new RuntimeException("Content cannot be empty");
+            throw new DeletedCommentUpdateException(ErrorMessages.DELETED_COMMENT_UPDATE);
         }
 
         comment.setContent(updateRequest.content());
@@ -82,13 +76,13 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponse getCommentById(String commentId) {
         return commentRepository.findById(commentId)
                 .map(commentMapper::toCommentResponse)
-                .orElseThrow(() -> new CommentNotFound("Comment not found with id: " + commentId));
+                .orElseThrow(() -> new CommentNotFound(String.format(ErrorMessages.COMMENT_NOT_FOUND,commentId)));
     }
 
     @Override
     public void deleteComment(String commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CommentNotFound("Comment not found with id: " + commentId));
+                .orElseThrow(() -> new CommentNotFound(String.format(ErrorMessages.COMMENT_NOT_FOUND,commentId)));
 
         comment.setDeleted(true);
         commentRepository.save(comment);

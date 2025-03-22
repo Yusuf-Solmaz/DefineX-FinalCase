@@ -1,6 +1,8 @@
 package com.yms.comment_service.exception;
 
-import com.yms.comment_service.exception.root_exception.RootException;
+import com.yms.comment_service.exception.exception_response.ErrorCodes;
+import com.yms.comment_service.exception.exception_response.ErrorMessages;
+import com.yms.comment_service.exception.exception_response.ExceptionResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,70 +10,123 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler()
-    public ResponseEntity<RootException> handleException(Exception e) {
-        RootException exception = new RootException(
-                HttpStatus.BAD_REQUEST.value(),
-                e.getLocalizedMessage(),
-                System.currentTimeMillis()
-        );
-        return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ExceptionResponse> handleException(Exception e) {
+        ErrorCodes errorCode = ErrorCodes.NO_CODE;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(exception);
     }
 
+    @ExceptionHandler(DeletedCommentUpdateException.class)
+    public ResponseEntity<ExceptionResponse> handleException(DeletedCommentUpdateException e) {
+        ErrorCodes errorCode = ErrorCodes.DELETED_COMMENT_UPDATE;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(exception);
+    }
+
+
+    @ExceptionHandler(TaskServiceUnavailableException.class)
+    public ResponseEntity<ExceptionResponse> handleException(TaskServiceUnavailableException e) {
+        ErrorCodes errorCode = ErrorCodes.TASK_SERVICE_UNAVAILABLE;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(exception);
+    }
+
+
     @ExceptionHandler(TaskNotFoundException.class)
-    public ResponseEntity<RootException> handleException(TaskNotFoundException e) {
-        RootException exception = new RootException(
-                HttpStatus.NOT_FOUND.value(),
-                e.getLocalizedMessage(),
-                System.currentTimeMillis()
-        );
-        return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
+    public ResponseEntity<ExceptionResponse> handleException(TaskNotFoundException e) {
+        ErrorCodes errorCode = ErrorCodes.TASK_NOT_FOUND;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(exception);
     }
 
     @ExceptionHandler(CommentNotFound.class)
-    public ResponseEntity<RootException> handleException(CommentNotFound e) {
-        RootException exception = new RootException(
-                HttpStatus.NOT_FOUND.value(),
-                e.getLocalizedMessage(),
-                System.currentTimeMillis()
-        );
-        return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
+    public ResponseEntity<ExceptionResponse> handleException(CommentNotFound e) {
+        ErrorCodes errorCode = ErrorCodes.COMMENT_NOT_FOUND;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(exception);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<RootException> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ExceptionResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        ErrorCodes errorCode = ErrorCodes.VALIDATION_FAILED;
+        Set<String> validationErrors = new HashSet<>();
 
-        RootException exception = new RootException();
+        ex.getBindingResult().getAllErrors().forEach(error ->
+                validationErrors.add(error.getDefaultMessage())
+        );
 
-        ex.getBindingResult().getAllErrors().forEach(error -> {
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(ErrorMessages.VALIDATION_ERROR)
+                .validationErrors(validationErrors)
+                .build();
 
-            String errorMessage = error.getDefaultMessage();
-
-            exception.setError(errorMessage);
-            exception.setStatus(HttpStatus.BAD_REQUEST.value());
-        });
-
-
-        return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(exception);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<RootException> handleConstraintViolationExceptions(ConstraintViolationException ex) {
+    public ResponseEntity<ExceptionResponse> handleConstraintViolationExceptions(ConstraintViolationException ex) {
+        ErrorCodes errorCode = ErrorCodes.CONSTRAINT_VIOLATION;
+        Set<String> validationErrors = new HashSet<>();
 
-        RootException exception = new RootException();
+        ex.getConstraintViolations().forEach(violation ->
+                validationErrors.add(violation.getMessage())
+        );
 
-        ex.getConstraintViolations().forEach(violation -> {
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(ErrorMessages.CONSTRAINT_VIOLATION)
+                .validationErrors(validationErrors)
+                .build();
 
-            String errorMessage = violation.getMessage();
-
-            exception.setError(errorMessage);
-            exception.setStatus(HttpStatus.BAD_REQUEST.value());
-
-        });
-
-        return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(exception);
     }
 }
