@@ -43,8 +43,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                     try {
                         jwtUtil.validateToken(token);
                         String username = jwtUtil.extractUsername(token);
-                        List<String> userRoles = jwtUtil.extractRoles(token);
 
+                        List<String> userRoles = jwtUtil.extractRoles(token);
 
                         List<String> allowedRoles = RouteValidator.authorizationRequiredEndpoints.entrySet()
                                 .stream()
@@ -53,11 +53,13 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                                 .findFirst()
                                 .orElse(Collections.emptyList());
 
-
                         boolean hasPermission = userRoles.stream().anyMatch(allowedRoles::contains);
                         if (!hasPermission) {
-                            return Mono.error(new UnauthorizedEntryException(ErrorMessages.UNAUTHORIZED_ENTRY));
+                            return Mono.error(new UnauthorizedEntryException(
+                                    ErrorMessages.UNAUTHORIZED_ENTRY
+                            ));
                         }
+
 
 
                         ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
