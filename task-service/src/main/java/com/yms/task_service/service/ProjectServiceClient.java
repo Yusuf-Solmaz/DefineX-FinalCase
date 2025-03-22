@@ -25,7 +25,7 @@ public class ProjectServiceClient {
         } catch (FeignException.NotFound e) {
             throw new ProjectNotFoundException(String.format(PROJECT_NOT_FOUND, projectId));
         } catch (Exception e) {
-            throw new ProjectServiceUnavailableException(ErrorMessages.PROJECT_SERVICE_UNAVAILABLE);
+            throw new ProjectServiceUnavailableException(String.format(ErrorMessages.PROJECT_SERVICE_UNAVAILABLE,e.getMessage()));
         }
     }
 
@@ -35,7 +35,7 @@ public class ProjectServiceClient {
         } catch (FeignException.NotFound e) {
             throw new ProjectNotFoundException(String.format(PROJECT_NOT_FOUND, projectId));
         } catch (Exception e) {
-            throw new ProjectServiceUnavailableException(ErrorMessages.PROJECT_SERVICE_UNAVAILABLE);
+            throw new ProjectServiceUnavailableException(String.format(ErrorMessages.PROJECT_SERVICE_UNAVAILABLE,e.getMessage()));
         }
     }
 }
