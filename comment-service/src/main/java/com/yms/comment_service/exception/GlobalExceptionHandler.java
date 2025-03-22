@@ -87,46 +87,4 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(exception);
     }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ExceptionResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        ErrorCodes errorCode = ErrorCodes.VALIDATION_FAILED;
-        Set<String> validationErrors = new HashSet<>();
-
-        ex.getBindingResult().getAllErrors().forEach(error ->
-                validationErrors.add(error.getDefaultMessage())
-        );
-
-        ExceptionResponse exception = ExceptionResponse.builder()
-                .errorCode(errorCode.getCode())
-                .errorDescription(errorCode.getDescription())
-                .errorDetail(ErrorMessages.VALIDATION_ERROR)
-                .validationErrors(validationErrors)
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(exception);
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ExceptionResponse> handleConstraintViolationExceptions(ConstraintViolationException ex) {
-        ErrorCodes errorCode = ErrorCodes.CONSTRAINT_VIOLATION;
-        Set<String> validationErrors = new HashSet<>();
-
-        ex.getConstraintViolations().forEach(violation ->
-                validationErrors.add(violation.getMessage())
-        );
-
-        ExceptionResponse exception = ExceptionResponse.builder()
-                .errorCode(errorCode.getCode())
-                .errorDescription(errorCode.getDescription())
-                .errorDetail(ErrorMessages.CONSTRAINT_VIOLATION)
-                .validationErrors(validationErrors)
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(exception);
-    }
 }

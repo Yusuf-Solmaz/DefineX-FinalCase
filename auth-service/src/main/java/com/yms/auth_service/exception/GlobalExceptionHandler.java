@@ -1,4 +1,6 @@
 package com.yms.auth_service.exception;
+import com.yms.auth_service.exception.exception_response.ErrorCodes;
+import com.yms.auth_service.exception.exception_response.ErrorMessages;
 import com.yms.auth_service.exception.exception_response.ExceptionResponse;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
@@ -15,71 +17,110 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.yms.auth_service.exception.exception_response.BusinessErrorCodes.*;
-import static com.yms.auth_service.exception.exception_response.BusinessErrorCodes.NOT_FOUND;
+import static com.yms.auth_service.exception.exception_response.ErrorCodes.*;
 import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
+    @ExceptionHandler()
+    public ResponseEntity<ExceptionResponse> handleException(Exception e) {
+        ErrorCodes errorCode = ErrorCodes.NO_CODE;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(exception);
+    }
+
+    @ExceptionHandler(UserNotAuthenticatedException.class)
+    public ResponseEntity<ExceptionResponse> handleException(UserNotAuthenticatedException e) {
+        ErrorCodes errorCode = ErrorCodes.USER_NOT_AUTHENTICATED;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(exception);
+    }
+
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ExceptionResponse> handleException(UserNotFoundException e) {
+        ErrorCodes errorCode = ErrorCodes.USER_NOT_FOUND;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
+
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(ExceptionResponse.builder()
-                        .businessErrorCode(NOT_FOUND.getCode())
-                        .businessErrorDescription("User Not Found")
-                        .error(e.getMessage())
-                        .build());
+                .body(exception);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ExceptionResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        ExceptionResponse exception = new ExceptionResponse();
+    @ExceptionHandler(EmailInUseException.class)
+    public ResponseEntity<ExceptionResponse> handleException(EmailInUseException e) {
+        ErrorCodes errorCode = EMAIL_IN_USE;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
 
-        Set<String> validationErrors = new HashSet<>();
-
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String errorMessage = error.getDefaultMessage();
-            validationErrors.add(errorMessage);
-        });
-
-        exception.setBusinessErrorCode(BAD_CREDENTIALS.getCode());
-        exception.setBusinessErrorDescription("Bad Credentials");
-        exception.setValidationErrors(validationErrors);
-
-        return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ExceptionResponse> handleConstraintViolationExceptions(ConstraintViolationException ex) {
-
-        ExceptionResponse exception = new ExceptionResponse();
-
-
-        Set<String> validationErrors = new HashSet<>();
-
-        ex.getConstraintViolations().forEach(violation -> {
-            String errorMessage = violation.getMessage();
-            validationErrors.add(errorMessage);
-        });
-
-        exception.setBusinessErrorCode(BAD_CREDENTIALS.getCode());
-        exception.setBusinessErrorDescription("Bad Credentials");
-        exception.setValidationErrors(validationErrors);
-
-        return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
+        return ResponseEntity
+                .status(CONFLICT)
+                .body(exception);
     }
 
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<ExceptionResponse> handleException(RoleNotFoundException e) {
+        ErrorCodes errorCode = ErrorCodes.ROLE_NOT_FOUND;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
+
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(ExceptionResponse.builder()
-                        .businessErrorCode(NOT_FOUND.getCode())
-                        .businessErrorDescription("Role Not Found")
-                        .error(e.getMessage())
-                        .build());
+                .body(exception);
+    }
+
+    @ExceptionHandler(OperationNotPermittedException.class)
+    public ResponseEntity<ExceptionResponse> handleException(OperationNotPermittedException e) {
+        ErrorCodes errorCode = ErrorCodes.OPERATION_NOT_PERMITTED;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
+
+        return ResponseEntity
+                .status(FORBIDDEN)
+                .body(exception);
+    }
+
+    @ExceptionHandler(ActivationTokenException.class)
+    public ResponseEntity<ExceptionResponse> handleException(ActivationTokenException e) {
+        ErrorCodes errorCode = ErrorCodes.ACTIVATION_TOKEN_EXCEPTION;
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(e.getLocalizedMessage())
+                .build();
+
+        return ResponseEntity
+                .status(UNAUTHORIZED)
+                .body(exception);
     }
 
     @ExceptionHandler(LockedException.class)
@@ -88,9 +129,9 @@ public class GlobalExceptionHandler {
                 .status(UNAUTHORIZED)
                 .body(
                         ExceptionResponse.builder()
-                                .businessErrorCode(ACCOUNT_LOCKED.getCode())
-                                .businessErrorDescription(ACCOUNT_LOCKED.getDescription())
-                                .error(exp.getMessage())
+                                .errorCode(ACCOUNT_LOCKED.getCode())
+                                .errorDescription(ACCOUNT_LOCKED.getDescription())
+                                .errorDetail(exp.getMessage())
                                 .build()
                 );
     }
@@ -101,9 +142,9 @@ public class GlobalExceptionHandler {
                 .status(UNAUTHORIZED)
                 .body(
                         ExceptionResponse.builder()
-                                .businessErrorCode(ACCOUNT_DISABLED.getCode())
-                                .businessErrorDescription(ACCOUNT_DISABLED.getDescription())
-                                .error(exp.getMessage())
+                                .errorCode(ACCOUNT_DISABLED.getCode())
+                                .errorDescription(ACCOUNT_DISABLED.getDescription())
+                                .errorDetail(exp.getMessage())
                                 .build()
                 );
     }
@@ -115,9 +156,9 @@ public class GlobalExceptionHandler {
                 .status(UNAUTHORIZED)
                 .body(
                         ExceptionResponse.builder()
-                                .businessErrorCode(BAD_CREDENTIALS.getCode())
-                                .businessErrorDescription(BAD_CREDENTIALS.getDescription())
-                                .error("Login and / or Password is incorrect")
+                                .errorCode(BAD_CREDENTIALS.getCode())
+                                .errorDescription(BAD_CREDENTIALS.getDescription())
+                                .errorDetail(ErrorMessages.BAD_CREDENTIALS_LOGIN)
                                 .build()
                 );
     }
@@ -128,44 +169,50 @@ public class GlobalExceptionHandler {
                 .status(INTERNAL_SERVER_ERROR)
                 .body(
                         ExceptionResponse.builder()
-                                .error(exp.getMessage())
+                                .errorDetail(exp.getMessage())
                                 .build()
                 );
     }
 
-    @ExceptionHandler(ActivationTokenException.class)
-    public ResponseEntity<ExceptionResponse> handleException(ActivationTokenException exp) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ExceptionResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        ErrorCodes errorCode = ErrorCodes.VALIDATION_FAILED;
+        Set<String> validationErrors = new HashSet<>();
+
+        ex.getBindingResult().getAllErrors().forEach(error ->
+                validationErrors.add(error.getDefaultMessage())
+        );
+
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(ErrorMessages.VALIDATION_ERROR)
+                .validationErrors(validationErrors)
+                .build();
+
         return ResponseEntity
-                .status(BAD_REQUEST)
-                .body(
-                        ExceptionResponse.builder()
-                                .error(exp.getMessage())
-                                .build()
-                );
+                .status(HttpStatus.BAD_REQUEST)
+                .body(exception);
     }
 
-    @ExceptionHandler(OperationNotPermittedException.class)
-    public ResponseEntity<ExceptionResponse> handleException(OperationNotPermittedException exp) {
-        return ResponseEntity
-                .status(BAD_REQUEST)
-                .body(
-                        ExceptionResponse.builder()
-                                .error(exp.getMessage())
-                                .build()
-                );
-    }
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ExceptionResponse> handleConstraintViolationExceptions(ConstraintViolationException ex) {
+        ErrorCodes errorCode = ErrorCodes.CONSTRAINT_VIOLATION;
+        Set<String> validationErrors = new HashSet<>();
 
+        ex.getConstraintViolations().forEach(violation ->
+                validationErrors.add(violation.getMessage())
+        );
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ExceptionResponse> handleException(Exception exp) {
-        exp.printStackTrace();
+        ExceptionResponse exception = ExceptionResponse.builder()
+                .errorCode(errorCode.getCode())
+                .errorDescription(errorCode.getDescription())
+                .errorDetail(ErrorMessages.CONSTRAINT_VIOLATION)
+                .validationErrors(validationErrors)
+                .build();
+
         return ResponseEntity
-                .status(INTERNAL_SERVER_ERROR)
-                .body(
-                        ExceptionResponse.builder()
-                                .businessErrorDescription("Internal error, please contact the admin")
-                                .error(exp.getMessage())
-                                .build()
-                );
+                .status(HttpStatus.BAD_REQUEST)
+                .body(exception);
     }
 }
