@@ -2,7 +2,9 @@ package com.yms.auth_service.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
+@Builder
 public record UserUpdateRequest(
         @Size(min = 3, message = "Name should be 3 characters long minimum")
         String firstname,
