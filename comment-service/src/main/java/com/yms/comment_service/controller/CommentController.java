@@ -37,6 +37,15 @@ public class CommentController {
         ).body(commentResponse);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<CommentResponse> updateComment(
+            @PathVariable String id,
+            @RequestBody @Valid CommentUpdateRequest updateRequest
+    ) {
+        CommentResponse updatedComment = commentService.updateComment(id, updateRequest);
+        return ResponseEntity.ok(updatedComment);
+    }
+
     @GetMapping("/{taskId}")
     public ResponseEntity<PagedResponse<CommentResponse>> getAllComments(
             @PathVariable Integer taskId,
@@ -51,16 +60,6 @@ public class CommentController {
     public ResponseEntity<CommentResponse> getCommentById(@PathVariable String commentId){
         return ResponseEntity.ok(commentService.getCommentById(commentId));
     }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<CommentResponse> updateComment(
-            @PathVariable String id,
-            @RequestBody @Valid CommentUpdateRequest updateRequest
-    ) {
-        CommentResponse updatedComment = commentService.updateComment(id, updateRequest);
-        return ResponseEntity.ok(updatedComment);
-    }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteComment(@PathVariable  String id) {
