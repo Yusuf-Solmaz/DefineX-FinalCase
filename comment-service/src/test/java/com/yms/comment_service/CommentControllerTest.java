@@ -53,7 +53,7 @@ class CommentControllerTest {
 
         CommentResponse updatedCommentResponse = CommentResponse.builder()
                 .taskId(1)
-                .userEmail("test@example.com")
+                .userEmail("test@gmail.com")
                 .content("Updated test comment")
                 .createdAt(null)
                 .build();
@@ -66,10 +66,10 @@ class CommentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest))
                         .header("Authorization", "Bearer token")
-                        .header("X-User-Id", "test@example.com"))
+                        .header("X-User-Id", "test@gmail.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").value("Updated test comment"))
-                .andExpect(jsonPath("$.userEmail").value("test@example.com"));
+                .andExpect(jsonPath("$.userEmail").value("test@gmail.com"));
 
         verify(commentService, times(1)).updateComment(eq("123"), any(CommentUpdateRequest.class));
     }
@@ -79,7 +79,7 @@ class CommentControllerTest {
         // Arrange
         CommentResponse commentResponse = CommentResponse.builder()
                 .taskId(1)
-                .userEmail("test@example.com")
+                .userEmail("test@gmail.com")
                 .content("This is a test comment")
                 .createdAt(null)
                 .build();
@@ -102,7 +102,7 @@ class CommentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].content").value("This is a test comment"))
-                .andExpect(jsonPath("$.content[0].userEmail").value("test@example.com"));
+                .andExpect(jsonPath("$.content[0].userEmail").value("test@gmail.com"));
     }
 
     @Test
@@ -115,7 +115,7 @@ class CommentControllerTest {
 
         CommentResponse commentResponse = CommentResponse.builder()
                 .taskId(1)
-                .userEmail("test@example.com")
+                .userEmail("test@gmail.com")
                 .content("This is a test comment")
                 .createdAt(null)
                 .build();
@@ -127,11 +127,11 @@ class CommentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(commentCreateRequest))
                         .header("Authorization", "Bearer token")
-                        .header("X-User-Id", "test@example.com"))
+                        .header("X-User-Id", "test@gmail.com"))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/api/v1/comments/1"))
                 .andExpect(jsonPath("$.content").value("This is a test comment"))
-                .andExpect(jsonPath("$.userEmail").value("test@example.com"));
+                .andExpect(jsonPath("$.userEmail").value("test@gmail.com"));
     }
 
     @Test

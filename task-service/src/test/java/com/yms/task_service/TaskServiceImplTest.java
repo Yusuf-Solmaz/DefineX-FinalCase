@@ -127,7 +127,7 @@ class TaskServiceImplTest {
 	}
 
 	@Test
-	void findById_ShouldThrowTaskNotFound_WhenTaskDoesNotExist() {
+	void findById_ShouldThrowTaskNotFound_WhenTaskSolmazsNotExist() {
 		// Arrange
 		when(taskRepository.findById(1)).thenReturn(Optional.empty());
 
@@ -158,7 +158,7 @@ class TaskServiceImplTest {
 	}
 
 	@Test
-	void cancelTask_ShouldThrowTaskNotFound_WhenTaskDoesNotExist() {
+	void cancelTask_ShouldThrowTaskNotFound_WhenTaskSolmazsNotExist() {
 		// Arrange
 		when(taskRepository.findById(1)).thenReturn(Optional.empty());
 

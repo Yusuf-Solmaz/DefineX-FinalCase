@@ -67,7 +67,7 @@ public class CommentServiceImplTest {
         comment = Comment.builder()
                 .id("1")
                 .taskId(1)
-                .userEmail("user@example.com")
+                .userEmail("user@gmail.com")
                 .content("Test comment content")
                 .createdAt(LocalDateTime.now())
                 .isDeleted(false)
@@ -76,7 +76,7 @@ public class CommentServiceImplTest {
         existingComment = Comment.builder()
                 .id("1")
                 .taskId(1)
-                .userEmail("user@example.com")
+                .userEmail("user@gmail.com")
                 .content("Old comment content")
                 .createdAt(LocalDateTime.now())
                 .isDeleted(false)
@@ -85,7 +85,7 @@ public class CommentServiceImplTest {
         updatedComment = Comment.builder()
                 .id("1")
                 .taskId(1)
-                .userEmail("user@example.com")
+                .userEmail("user@gmail.com")
                 .content("Updated comment content")
                 .createdAt(existingComment.getCreatedAt())
                 .isDeleted(false)
@@ -93,7 +93,7 @@ public class CommentServiceImplTest {
 
         commentResponse = CommentResponse.builder()
                 .taskId(1)
-                .userEmail("user@example.com")
+                .userEmail("user@gmail.com")
                 .content("Updated comment content")
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -109,7 +109,7 @@ public class CommentServiceImplTest {
 
         updatedCommentResponse = CommentResponse.builder()
                 .taskId(1)
-                .userEmail("user@example.com")
+                .userEmail("user@gmail.com")
                 .content(updateRequest.content())
                 .createdAt(existingComment.getCreatedAt())
                 .isDeleted(false)
@@ -148,7 +148,7 @@ public class CommentServiceImplTest {
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(commentMapper.toCommentResponse(any(Comment.class))).thenReturn(commentResponse);
 
-        CommentResponse result = commentService.addComment(commentCreateRequest, "user@example.com", "dummyToken");
+        CommentResponse result = commentService.addComment(commentCreateRequest, "user@gmail.com", "dummyToken");
 
         assertNotNull(result);
         assertEquals(commentResponse.content(), result.content());
@@ -178,7 +178,7 @@ public class CommentServiceImplTest {
         Comment existingComment = Comment.builder()
                 .id("1")
                 .taskId(1)
-                .userEmail("user@example.com")
+                .userEmail("user@gmail.com")
                 .content("Test comment content")
                 .createdAt(LocalDateTime.now())
                 .isDeleted(false)

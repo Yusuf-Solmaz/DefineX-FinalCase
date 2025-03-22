@@ -126,8 +126,8 @@ public class ProjectControllerTest {
     @Test
     void getProjectMember_ShouldReturnListOfMembers() throws Exception {
         List<UserResponse> userResponses = Arrays.asList(
-                UserResponse.builder().id(1).firstname("John").lastname("Doe").email("john.doe@example.com").authorities(List.of("USER")).fullName("John Doe").build(),
-                UserResponse.builder().id(2).firstname("Jane").lastname("Smith").email("jane.smith@example.com").authorities(List.of("USER")).fullName("Jane Smith").build()
+                UserResponse.builder().id(1).firstname("Yusuf").lastname("Solmaz").email("Yusuf.Solmaz@gmail.com").authorities(List.of("USER")).fullName("Yusuf Solmaz").build(),
+                UserResponse.builder().id(2).firstname("Ali").lastname("Smith").email("Ali.smith@gmail.com").authorities(List.of("USER")).fullName("Ali Smith").build()
         );
 
         String token = "Bearer token";
@@ -136,8 +136,8 @@ public class ProjectControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/projects/members/1")
                         .header("Authorization", token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].fullName", is("John Doe")))
-                .andExpect(jsonPath("$[1].fullName", is("Jane Smith")));
+                .andExpect(jsonPath("$[0].fullName", is("Yusuf Solmaz")))
+                .andExpect(jsonPath("$[1].fullName", is("Ali Smith")));
     }
 
     @Test
