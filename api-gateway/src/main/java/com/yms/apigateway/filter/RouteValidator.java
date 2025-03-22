@@ -15,12 +15,11 @@ public class RouteValidator {
     );
 
     public static final Map<String, List<String>> authorizationRequiredEndpoints = Map.of(
-            "/api/v1/projects", List.of(Roles.MANAGER, Roles.LEADER),
+            "/api/v1/projects", List.of(Roles.MANAGER),
 
-            "/api/v1/tasks", List.of(Roles.MANAGER, Roles.LEADER),
-            "/api/v1/tasks/{taskId}/status", List.of(Roles.MANAGER, Roles.LEADER,Roles.MEMBER),
-            "/api/v1/tasks/project/{projectId}", List.of(Roles.MANAGER, Roles.LEADER,Roles.MEMBER),
+            "/api/v1/tasks/admin", List.of(Roles.MANAGER, Roles.LEADER),
 
+            "/api/v1/tasks/open", List.of(Roles.MANAGER, Roles.LEADER,Roles.MEMBER),
             "/api/v1/comments", List.of(Roles.MANAGER, Roles.LEADER,Roles.MEMBER),
             "/api/v1/attachments", List.of(Roles.MANAGER, Roles.LEADER,Roles.MEMBER)
     );
