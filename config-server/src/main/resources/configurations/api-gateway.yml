@@ -49,9 +49,3 @@ spring:
             - Path=/api/v1/attachments/**
           filters:
             - AuthenticationFilter
-
-
-management:
-  tracing:
-    sampling:
-      probability: 1.0

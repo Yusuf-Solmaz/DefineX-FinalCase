@@ -37,9 +37,3 @@ eureka:
 
 server:
   port: 8060
-
-
-management:
-  tracing:
-    sampling:
-      probability: 1.0

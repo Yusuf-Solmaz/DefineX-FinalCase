@@ -22,9 +22,4 @@ server:
 
 application:
   config:
-    tasks-url: http://localhost:8222/api/v1/tasks
-
-management:
-  tracing:
-    sampling:
-      probability: 1.0
+    tasks-url: http://localhost:8222/api/v1/tasks/open

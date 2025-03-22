@@ -26,8 +26,3 @@ server:
 application:
   config:
     members-url: http://localhost:8222/api/v1/users
-
-management:
-  tracing:
-    sampling:
-      probability: 1.0
