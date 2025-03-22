@@ -8,6 +8,8 @@ public class ErrorMessages {
     public static final String PROJECT_STATUS_TRANSITION_INVALID = "Invalid state transition from %s to %s.";
     public static final String USER_SERVICE_UNAVAILABLE = "User service unavailable.";
     public static final String CHANGE_TASK_COMPLETED = "Cannot change status of a completed project.";
+    public static final String CONSTRAINT_VIOLATION = "Constraint violation errors occurred.";
+    public static final String VALIDATION_ERROR = " Validation errors occurred.";
 
     private ErrorMessages() {
     }

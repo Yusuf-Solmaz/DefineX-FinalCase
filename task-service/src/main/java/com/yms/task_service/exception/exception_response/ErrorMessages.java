@@ -18,6 +18,8 @@ public class ErrorMessages {
     public static final String INVALID_ASSIGNEES = "The following assignees are not part of the project team: ";
     public static final String PROJECT_SERVICE_UNAVAILABLE = "Project service unavailable.";
     public static final String USER_SERVICE_UNAVAILABLE = "User service unavailable.";
+    public static final String CONSTRAINT_VIOLATION = "Constraint violation errors occurred.";
+    public static final String VALIDATION_ERROR = " Validation errors occurred.";
 
 
 

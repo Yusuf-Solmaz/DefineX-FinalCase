@@ -1,6 +1,7 @@
 package com.yms.projectservice.exception;
 
 import com.yms.projectservice.exception.exception_response.ErrorCodes;
+import com.yms.projectservice.exception.exception_response.ErrorMessages;
 import com.yms.projectservice.exception.exception_response.ExceptionResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -126,7 +127,7 @@ public class GlobalExceptionHandler {
         ExceptionResponse exception = ExceptionResponse.builder()
                 .errorCode(errorCode.getCode())
                 .errorDescription(errorCode.getDescription())
-                .errorDetail("Validation errors occurred")
+                .errorDetail(ErrorMessages.VALIDATION_ERROR)
                 .validationErrors(validationErrors)
                 .build();
 
@@ -147,7 +148,7 @@ public class GlobalExceptionHandler {
         ExceptionResponse exception = ExceptionResponse.builder()
                 .errorCode(errorCode.getCode())
                 .errorDescription(errorCode.getDescription())
-                .errorDetail("Constraint violation errors occurred")
+                .errorDetail(ErrorMessages.CONSTRAINT_VIOLATION)
                 .validationErrors(validationErrors)
                 .build();
 
