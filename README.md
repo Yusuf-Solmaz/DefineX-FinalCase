@@ -19,7 +19,7 @@ Story: The current application has become outdated, slow, and no longer meets th
     </li>
     <li><a href="#project-structure">Project Structure</a></li>
     <li><a href="#used-technologies">Used Technologies</a></li>
-    <li><a href="architecture">Architecture</a></li>
+    <li><a href="#architecture">Architecture</a></li>
     <li><a href="#api-documentation">API Documentation</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#licence">Licence</a></li>
