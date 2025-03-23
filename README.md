@@ -26,12 +26,13 @@ Story: The current application has become outdated, slow, and no longer meets th
   </ol>
 </details>
 
-## Key Features
-* Project and Task Management: The application allows project group managers to manage projects related to a department and also manage tasks within a project.
-* Team Member Assignment: Team leaders or project managers (in a department) can assign team members to tasks.
-* Progress Tracking: Team leaders or project managers can track the progress of a task, with states such as Backlog, In Analysis, In Development/Progress, Cancelled, Blocked, or Completed.
-* Priority Management: Team leaders or project managers can assign priorities to tasks, including Critical, High, Medium, or Low.
-* File Attachment Support: Team members (Project Managers, Team Leaders, or other Team Members) can attach one or more files to a task, with the files being stored on the disk.
+## Key Features  
+- **Project and Task Management**: The application allows project group managers to manage projects related to a department and also manage tasks within a project.  
+- **Team Member Assignment**: Team leaders or project managers (in a department) can assign team members to tasks.  
+- **Progress Tracking**: Team leaders or project managers can track the progress of a task, with states such as Backlog, In Analysis, In Development/Progress, Cancelled, Blocked, or Completed.  
+- **Priority Management**: Team leaders or project managers can assign priorities to tasks, including Critical, High, Medium, or Low.  
+- **File Attachment Support**: Team members (Project Managers, Team Leaders, or other Team Members) can attach one or more files to a task, with the files being stored on the disk.
+
 
 ## Project Structure
 ![Multı-Module](https://github.com/user-attachments/assets/7424a07a-ca59-450b-aeb7-ac5e0cce9b2c)
@@ -51,22 +52,15 @@ Story: The current application has become outdated, slow, and no longer meets th
 ## Architecture
 This project follows a Microservices Architecture, where different services handle specific functionalities independently. Each service is developed, deployed, and scaled separately, ensuring better maintainability and flexibility.
 
-### Microservices Overview
-api-gateway: Acts as an entry point for client requests, routing them to appropriate microservices.
-attachment-service: Manages file uploads and storage.
-auth-service: Handles authentication, authorization, and user management.
-comment-service: Manages user comments and related operations.
-config-server: Centralized configuration management for all services.
-eureka-server: Service discovery, allowing services to locate and communicate with each other.
-project-service: Manages project-related functionalities.
-task-service: Handles tasks and related operations.
+* api-gateway: Acts as an entry point for client requests, routing them to appropriate microservices.
+* attachment-service: Manages file uploads and storage.
+* auth-service: Handles authentication, authorization, and user management.
+* comment-service: Manages user comments and related operations.
+* config-server: Centralized configuration management for all services.
+* eureka-server: Service discovery, allowing services to locate and communicate with each other.
+* project-service: Manages project-related functionalities.
+* task-service: Handles tasks and related operations.
 
-### Microservices Architecture Principles
-Service Independence: Each service operates independently, ensuring high availability and easy maintenance.
-Scalability: Services can be scaled separately based on demand.
-Resilience: Failures in one service do not affect the entire system.
-Service Discovery: Eureka Server enables dynamic service registration and discovery.
-Centralized Configuration: Config Server ensures consistent configuration across all services.
 
 ## API Documentation
 You can access the API documentation from the link [here](https://drive.google.com/file/d/1B0eDaCQA7BzJtjLg2mNvj1gK-nF5rbNy/view?usp=drive_link)
