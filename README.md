@@ -52,15 +52,14 @@ Story: The current application has become outdated, slow, and no longer meets th
 ## Architecture
 This project follows a Microservices Architecture, where different services handle specific functionalities independently. Each service is developed, deployed, and scaled separately, ensuring better maintainability and flexibility.
 
-* api-gateway: Acts as an entry point for client requests, routing them to appropriate microservices.
-* attachment-service: Manages file uploads and storage.
-* auth-service: Handles authentication, authorization, and user management.
-* comment-service: Manages user comments and related operations.
-* config-server: Centralized configuration management for all services.
-* eureka-server: Service discovery, allowing services to locate and communicate with each other.
-* project-service: Manages project-related functionalities.
-* task-service: Handles tasks and related operations.
-
+- **api-gateway**: Acts as an entry point for client requests, routing them to appropriate microservices.  
+- **attachment-service**: Manages file uploads and storage.  
+- **auth-service**: Handles authentication, authorization, and user management.  
+- **comment-service**: Manages user comments and related operations.  
+- **config-server**: Centralized configuration management for all services.  
+- **eureka-server**: Service discovery, allowing services to locate and communicate with each other.  
+- **project-service**: Manages project-related functionalities.  
+- **task-service**: Handles tasks and related operations.  
 
 ## API Documentation
 You can access the API documentation from the link [here](https://drive.google.com/file/d/1B0eDaCQA7BzJtjLg2mNvj1gK-nF5rbNy/view?usp=drive_link)
