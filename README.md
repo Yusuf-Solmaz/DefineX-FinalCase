@@ -48,6 +48,7 @@ Story: The current application has become outdated, slow, and no longer meets th
 * MongoDB
 * MapStruct
 * Lombok
+* MailDev
 
 ## Architecture
 This project follows a Microservices Architecture, where different services handle specific functionalities independently. Each service is developed, deployed, and scaled separately, ensuring better maintainability and flexibility.
